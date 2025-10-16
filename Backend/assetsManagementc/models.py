@@ -82,25 +82,84 @@ class TblAssetPurchaseDetails(models.Model):
         db_table = 'Tbl_Asset_Purchase_Details'
 
 class TblAssetStatus(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    asset_status_id = models.CharField(db_column='Asset_Status_ID', primary_key=True, max_length=9, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    server_asset = models.ForeignKey('TblServerAsset', models.DO_NOTHING, db_column='Server_Asset_ID', blank=True, null=True)  # Field name made lowercase.
-    asset_condition_good_fair_excellent = models.CharField(db_column='Asset Condition. Good/Fair/Excellent', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
-    in_amc = models.IntegerField(db_column='In_AMC', blank=True, null=True)  # Field name made lowercase.
-    supplier = models.ForeignKey('TblSupplierMaster', models.DO_NOTHING, db_column='Supplier_ID', blank=True, null=True)  
-# Field name made lowercase.
-    period_in_year_field = models.IntegerField(db_column='Period(in_Year)', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.
-    warranty_description = models.CharField(db_column='Warranty_description', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    amc_amount = models.IntegerField(db_column='AMC_Amount', blank=True, null=True)  # Field name made lowercase.
-    warranty_start_date = models.DateField(db_column='warranty Start Date', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
-    warranty_over_date = models.DateField(db_column='Warranty Over date', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
-    remarks = models.CharField(db_column='Remarks', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    created_date = models.DateTimeField(db_column='Created_Date', blank=True, null=True)  # Field name made lowercase.    
-    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)  # Field name made lowercase.    
+    id = models.IntegerField(db_column='ID', unique=True)
+    asset_status_id = models.CharField(
+        db_column='Asset_Status_ID',
+        primary_key=True,
+        max_length=9,
+        db_collation='SQL_Latin1_General_CP1_CI_AS'
+    )
+    server_asset = models.ForeignKey(
+        'TblServerAsset',
+        models.DO_NOTHING,
+        db_column='Server_Asset_ID',
+        blank=True,
+        null=True
+    )
+
+    # The real SQL column is: Asset Condition. Good/Fair/Excellent
+    # mssql was splitting at the dot, so force quoting with brackets.
+    asset_condition = models.CharField(
+        db_column='[Asset Condition. Good/Fair/Excellent]',
+        max_length=200,
+        db_collation='SQL_Latin1_General_CP1_CI_AS',
+        blank=True,
+        null=True
+    )
+
+    in_amc = models.IntegerField(db_column='In_AMC', blank=True, null=True)
+    supplier = models.ForeignKey(
+        'TblSupplierMaster',
+        models.DO_NOTHING,
+        db_column='Supplier_ID',
+        blank=True,
+        null=True
+    )
+
+    # Real SQL column is: Period(in_Year)
+    period_in_year_field = models.IntegerField(
+        db_column='[Period(in_Year)]',
+        blank=True,
+        null=True
+    )
+
+    warranty_description = models.CharField(
+        db_column='Warranty_description',
+        max_length=200,
+        db_collation='SQL_Latin1_General_CP1_CI_AS',
+        blank=True,
+        null=True
+    )
+    amc_amount = models.IntegerField(db_column='AMC_Amount', blank=True, null=True)
+
+    # Real SQL columns include spaces. Bracket to be safe.
+    warranty_start_date = models.DateField(
+        db_column='[warranty Start Date]',
+        blank=True,
+        null=True
+    )
+    warranty_over_date = models.DateField(
+        db_column='[Warranty Over date]',
+        blank=True,
+        null=True
+    )
+
+    remarks = models.CharField(
+        db_column='Remarks',
+        max_length=200,
+        db_collation='SQL_Latin1_General_CP1_CI_AS',
+        blank=True,
+        null=True
+    )
+    created_date = models.DateTimeField(db_column='Created_Date', blank=True, null=True)
+    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'Tbl_Asset_Status'        
+        db_table = 'Tbl_Asset_Status'
+
+    def __str__(self):
+        return self.asset_status_id   
 
 class TblAssetType(models.Model):
     id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.

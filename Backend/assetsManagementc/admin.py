@@ -71,29 +71,22 @@ class TblAssetPurchaseDetailsAdmin(admin.ModelAdmin):
 
 class TblAssetStatusAdmin(admin.ModelAdmin):
     list_display = (
-        "asset_status_id",
-        "server_asset",
-        "asset_condition_good_fair_excellent",
-        "in_amc",
-        "supplier",
-        "period_in_year_field",
-        "warranty_description",
-        "amc_amount",
-        "warranty_start_date",
-        "warranty_over_date",
-        "remarks",
-        "created_date",
-        "updated_date",
-        "id",
+        'asset_status_id',
+        'server_asset',
+        'asset_condition',
+        'in_amc',
+        'supplier',
+        'period_in_year_field',
+        'warranty_description',
+        'amc_amount',
+        'warranty_start_date',
+        'warranty_over_date',
+        'remarks',
+        'created_date',
+        'updated_date',
     )
-    list_filter = ("server_asset", "supplier", "in_amc")
-    search_fields = (
-        "asset_status_id",
-        "server_asset__server_asset_id",
-        "supplier__supplier_id",
-        "warranty_description",
-        "remarks",
-    )
+    search_fields = ('asset_status_id', 'warranty_description', 'remarks')
+    list_filter = ('in_amc', 'supplier', 'warranty_start_date', 'warranty_over_date')
 
 class TblAssetTypeAdmin(admin.ModelAdmin):
     list_display = ("asset_type_id", "asset_type", "asset", "id")
