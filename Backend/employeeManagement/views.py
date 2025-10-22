@@ -4,19 +4,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import parser_classes
-from .models import TblEmployeeMaster
+from .models import Employee
 from .serializers import *
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import pandas as pd
-from .permissions import IsSuperAdmin
 import traceback
-from employeeManagement.models import TblEmployeeMaster
-from .serializers import RoleSerializer, AssignRoleSerializer
-from .serializers import BulkAssetImportSerializer
-from .permissions import IsSuperAdmin
+from .serializers import RoleSerializer
+# from .serializers import BulkAssetImportSerializer
 import logging
 from logs.views import set_request_context
 from django.db import IntegrityError
@@ -33,7 +30,7 @@ logger = logging.getLogger('custom')  # Use your 'custom' logger
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_list(request):
-    qs = TblEmployeeMaster.objects.all().order_by("employee_id")
+    qs = Employee.objects.all().order_by("employee_id")
     data = UserSerializer(qs, many=True).data
     logger.info("Users listed by %s", getattr(request.user, "email_id", "unknown"))
     return Response(data, status=status.HTTP_200_OK)
@@ -57,7 +54,7 @@ def user_create(request):
     logger.info("User created by %s: %s", getattr(request.user, "email_id", "unknown"), out.get("email_id"))
     return Response(out, status=status.HTTP_201_CREATED)
 
-# ---------- UPDATE ----------
+# # ---------- UPDATE ----------
 try:
     from logs.views import set_request_context
 except Exception:
@@ -68,7 +65,8 @@ except Exception:
 update_request_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
-        "employee_name": openapi.Schema(type=openapi.TYPE_STRING, example="Jane Doe"),
+        "first_name": openapi.Schema(type=openapi.TYPE_STRING, example="Jane"),
+        "last_name": openapi.Schema(type=openapi.TYPE_STRING, example="Doe"),
         "role": openapi.Schema(type=openapi.TYPE_STRING, example="User"),
         "department": openapi.Schema(type=openapi.TYPE_STRING, nullable=True, example="DEPT0001"),
         "password": openapi.Schema(type=openapi.TYPE_STRING, example="StrongPass@123"),
@@ -83,21 +81,19 @@ update_request_schema = openapi.Schema(
 )
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
-def user_update(request, employee_id):
+def user_update(request, id):
     set_request_context(request)
-    print("1213")
-    user = get_object_or_404(TblEmployeeMaster, employee_id=employee_id)
+    user = get_object_or_404(Employee, id=id)
     ser = UserUpdateSerializer(user, data=request.data, partial=True)
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
     user = ser.save()
     # include department name in response
-    user = TblEmployeeMaster.objects.select_related("department").get(pk=user.pk)
     return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
 
-# ---------- DEACTIVATE (soft delete) ----------
+# # ---------- DEACTIVATE (soft delete) ----------
 deactivate_response = openapi.Response(
     "User deactivated",
     schema=openapi.Schema(
@@ -113,13 +109,13 @@ deactivate_response = openapi.Response(
 )
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def user_deactivate(request, employee_id):
+def user_deactivate(request, id):
     set_request_context(request)
-    user = get_object_or_404(TblEmployeeMaster, employee_id=employee_id)
-    TblEmployeeMaster.objects.filter(pk=user.pk).update(is_active_raw=0)
+    user = get_object_or_404(Employee, id=id)
+    Employee.objects.filter(pk=user.pk).update(is_active=0)
     return Response({"message": "User deactivated"}, status=status.HTTP_200_OK)
 
-#-------------get roles---------
+# #-------------get roles--------- 
 @swagger_auto_schema(
     method="get",
     responses={200: RoleSerializer(many=True)},
@@ -129,7 +125,7 @@ def user_deactivate(request, employee_id):
 @permission_classes([IsAuthenticated])
 def get_roles(request):
     set_request_context(request)
-    roles = [{"value": v, "label": l} for v, l in TblEmployeeMaster.ROLE_CHOICES]
+    roles = [{"value": v, "label": l} for v, l in Employee.ROLE_CHOICES]
     return Response(RoleSerializer(roles, many=True).data, status=status.HTTP_200_OK)
 
 assign_ok = openapi.Response(
@@ -141,160 +137,138 @@ assign_ok = openapi.Response(
 )
 
 
-#--------------Assign roles----------
-@swagger_auto_schema(
-    method="post",
-    request_body=AssignRoleSerializer,
-    responses={201: "Role updated", 400: "Validation error", 404: "User not found"},
-    operation_summary="Assign Roles By Super Admin Only",
-)
-@api_view(["POST"])
-@permission_classes([IsAuthenticated, IsSuperAdmin])
-def assign_role(request):
-    s = AssignRoleSerializer(data=request.data)
-    if not s.is_valid():
-        return Response(s.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    emp_id = s.validated_data["employee_id"]
-    role = s.validated_data["role"]
+# try:
+#     from logs.views import set_request_context
+# except Exception:
+#     def set_request_context(request):
+#         return None
 
-    user = get_object_or_404(TblEmployeeMaster, employee_id=emp_id)
-    TblEmployeeMaster.objects.filter(pk=user.pk).update(role=role)
+# ROLE_VALUES = {v for v, _ in Employee.ROLE_CHOICES}
 
-    return Response({"message": "Role updated"}, status=status.HTTP_201_CREATED)
+# bulk_result_schema = openapi.Schema(
+#     type=openapi.TYPE_OBJECT,
+#     properties={
+#         "created": openapi.Schema(
+#             type=openapi.TYPE_ARRAY,
+#             items=openapi.Schema(type=openapi.TYPE_OBJECT)
+#         ),
+#         "errors": openapi.Schema(
+#             type=openapi.TYPE_ARRAY,
+#             items=openapi.Schema(type=openapi.TYPE_STRING)
+#         ),
+#     },
+# )
 
+# @swagger_auto_schema(
+#     method="post",
+#     request_body=BulkAssetImportSerializer,
+#     responses={200: openapi.Response(description="Bulk import result", schema=bulk_result_schema),
+#                400: "Bad Request"},
+#     operation_summary="Bulk Create Employee Accounts",
+#     consumes=["multipart/form-data"],
+# )
+# @api_view(["POST"])
+# @parser_classes([MultiPartParser])
+# @permission_classes([IsAuthenticated])
+# def employee_bulk_import(request):
+#     set_request_context(request)
 
-try:
-    from logs.views import set_request_context
-except Exception:
-    def set_request_context(request):
-        return None
+#     upload = request.FILES.get("file")
+#     if not upload:
+#         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-ROLE_VALUES = {v for v, _ in TblEmployeeMaster.ROLE_CHOICES}
+#     if not upload.name.lower().endswith((".xlsx", ".xls")):
+#         return Response({"error": "Only .xlsx or .xls files are accepted"}, status=status.HTTP_400_BAD_REQUEST)
 
-bulk_result_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        "created": openapi.Schema(
-            type=openapi.TYPE_ARRAY,
-            items=openapi.Schema(type=openapi.TYPE_OBJECT)
-        ),
-        "errors": openapi.Schema(
-            type=openapi.TYPE_ARRAY,
-            items=openapi.Schema(type=openapi.TYPE_STRING)
-        ),
-    },
-)
+#     try:
+#         df = pd.read_excel(upload)
+#     except Exception as e:
+#         return Response({"error": f"Invalid Excel file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-@swagger_auto_schema(
-    method="post",
-    request_body=BulkAssetImportSerializer,
-    responses={200: openapi.Response(description="Bulk import result", schema=bulk_result_schema),
-               400: "Bad Request"},
-    operation_summary="Bulk Create Employee Accounts",
-    consumes=["multipart/form-data"],
-)
-@api_view(["POST"])
-@parser_classes([MultiPartParser])
-@permission_classes([IsAuthenticated])
-def employee_bulk_import(request):
-    set_request_context(request)
+#     # column helpers
+#     lower_map = {str(c).strip().lower(): c for c in df.columns}
 
-    upload = request.FILES.get("file")
-    if not upload:
-        return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
+#     def pick(*names):
+#         for n in names:
+#             if n in lower_map:
+#                 return lower_map[n]
+#         return None
 
-    if not upload.name.lower().endswith((".xlsx", ".xls")):
-        return Response({"error": "Only .xlsx or .xls files are accepted"}, status=status.HTTP_400_BAD_REQUEST)
+#     col_employee_name = pick("employee_name", "name", "full_name")
+#     col_email = pick("email_id", "email")
+#     col_role = pick("role")
+#     col_department_id = pick("department_id", "departmentid", "dept_id")
+#     col_department_name = pick("department", "department_name", "dept")
+#     col_password = pick("password")
 
-    try:
-        df = pd.read_excel(upload)
-    except Exception as e:
-        return Response({"error": f"Invalid Excel file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+#     required = [col_employee_name, col_email]
+#     if any(c is None for c in required):
+#         return Response(
+#             {"error": "Missing columns. Required at least: employee_name, email_id or email"},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
 
-    # column helpers
-    lower_map = {str(c).strip().lower(): c for c in df.columns}
+#     created = []
+#     errors = []
 
-    def pick(*names):
-        for n in names:
-            if n in lower_map:
-                return lower_map[n]
-        return None
+#     for idx, row in df.iterrows():
+#         row_no = idx + 2  # header row is 1
+#         try:
+#             employee_name = str(row.get(col_employee_name) or "").strip()
+#             email = str(row.get(col_email) or "").strip().lower()
+#             role = str(row.get(col_role) or "User").strip()
+#             raw_pwd = str(row.get(col_password) or "Default@123").strip()
 
-    col_employee_name = pick("employee_name", "name", "full_name")
-    col_email = pick("email_id", "email")
-    col_role = pick("role")
-    col_department_id = pick("department_id", "departmentid", "dept_id")
-    col_department_name = pick("department", "department_name", "dept")
-    col_password = pick("password")
+#             if not employee_name:
+#                 errors.append(f"Row {row_no}: employee_name required")
+#                 continue
+#             if not email:
+#                 errors.append(f"Row {row_no}: email required")
+#                 continue
+#             if role and role not in ROLE_VALUES:
+#                 errors.append(f"Row {row_no}: role '{role}' not in {sorted(ROLE_VALUES)}")
+#                 continue
 
-    required = [col_employee_name, col_email]
-    if any(c is None for c in required):
-        return Response(
-            {"error": "Missing columns. Required at least: employee_name, email_id or email"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+#             # resolve department
+#             dept_obj = None
+#             if col_department_id and pd.notna(row.get(col_department_id)):
+#                 dept_id = str(row.get(col_department_id)).strip()
+#                 dept_obj = TblDepartmentMaster.objects.filter(department_id=dept_id).first()
+#                 if not dept_obj:
+#                     errors.append(f"Row {row_no}: Department_ID '{dept_id}' not found")
+#                     continue
+#             elif col_department_name and pd.notna(row.get(col_department_name)):
+#                 dept_name = str(row.get(col_department_name)).strip()
+#                 if dept_name:
+#                     dept_obj = TblDepartmentMaster.objects.filter(department__iexact=dept_name).first()
+#                     if not dept_obj:
+#                         errors.append(f"Row {row_no}: Department '{dept_name}' not found")
+#                         continue
 
-    created = []
-    errors = []
+#             # skip if email exists
+#             if Employee.objects.filter(email_id__iexact=email).exists():
+#                 errors.append(f"Row {row_no}: email '{email}' already exists")
+#                 continue
 
-    for idx, row in df.iterrows():
-        row_no = idx + 2  # header row is 1
-        try:
-            employee_name = str(row.get(col_employee_name) or "").strip()
-            email = str(row.get(col_email) or "").strip().lower()
-            role = str(row.get(col_role) or "User").strip()
-            raw_pwd = str(row.get(col_password) or "Default@123").strip()
-
-            if not employee_name:
-                errors.append(f"Row {row_no}: employee_name required")
-                continue
-            if not email:
-                errors.append(f"Row {row_no}: email required")
-                continue
-            if role and role not in ROLE_VALUES:
-                errors.append(f"Row {row_no}: role '{role}' not in {sorted(ROLE_VALUES)}")
-                continue
-
-            # resolve department
-            dept_obj = None
-            if col_department_id and pd.notna(row.get(col_department_id)):
-                dept_id = str(row.get(col_department_id)).strip()
-                dept_obj = TblDepartmentMaster.objects.filter(department_id=dept_id).first()
-                if not dept_obj:
-                    errors.append(f"Row {row_no}: Department_ID '{dept_id}' not found")
-                    continue
-            elif col_department_name and pd.notna(row.get(col_department_name)):
-                dept_name = str(row.get(col_department_name)).strip()
-                if dept_name:
-                    dept_obj = TblDepartmentMaster.objects.filter(department__iexact=dept_name).first()
-                    if not dept_obj:
-                        errors.append(f"Row {row_no}: Department '{dept_name}' not found")
-                        continue
-
-            # skip if email exists
-            if TblEmployeeMaster.objects.filter(email_id__iexact=email).exists():
-                errors.append(f"Row {row_no}: email '{email}' already exists")
-                continue
-
-            # create via manager so password hashes correctly and email maps to email_id
-            user = TblEmployeeMaster.objects.create_user(
-                email_id=email,
-                password=raw_pwd,
-                employee_name=employee_name,
-                role=role or "User",
-                department=dept_obj,
-                is_active_raw=1,
+#             # create via manager so password hashes correctly and email maps to email_id
+#             user = Employee.objects.create_user(
+#                 email_id=email,
+#                 password=raw_pwd,
+#                 employee_name=employee_name,
+#                 role=role or "User",
+#                 department=dept_obj,
+#                 is_active_raw=1,
                 
-            )
+#             )
 
-            # refresh with department for serializer
-            user = TblEmployeeMaster.objects.select_related("department").get(pk=user.pk)
-            created.append(UserSerializer(user).data)
+#             # refresh with department for serializer
+#             user = Employee.objects.select_related("department").get(pk=user.pk)
+#             created.append(UserSerializer(user).data)
 
-        except IntegrityError as ie:
-            errors.append(f"Row {row_no}: integrity error {str(ie)}")
-        except Exception as e:
-            errors.append(f"Row {row_no}: {str(e)}")
+#         except IntegrityError as ie:
+#             errors.append(f"Row {row_no}: integrity error {str(ie)}")
+#         except Exception as e:
+#             errors.append(f"Row {row_no}: {str(e)}")
 
-    return Response({"created": created, "errors": errors}, status=status.HTTP_200_OK)
+#     return Response({"created": created, "errors": errors}, status=status.HTTP_200_OK)

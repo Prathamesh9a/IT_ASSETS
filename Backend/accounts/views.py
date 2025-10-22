@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import logging
+import traceback
+from employeeManagement.models import Employee
 
 logger = logging.getLogger("custom")
 
@@ -42,14 +44,29 @@ login_response_schema = openapi.Schema(
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_view(request):
-    email = (request.data.get("email") or "").strip().lower()
-    password = request.data.get("password") or ""
-
-    if not email or not password:
-        return Response({"detail": "Email and password required."}, status=400)
-
-    # IMPORTANT: pass username=email, Django maps it to USERNAME_FIELD (email_id)
-    user = authenticate(request, username=email, password=password)
+    """Login With Email and Password"""
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    user = None
+    try:
+        user = Employee.objects.get(email=email)
+    except Employee.DoesNotExist:
+        traceback.print_exc
+        # Backend Log
+        logger.error(f"Login failed: User with email {email} does not exist", exc_info=True)
+        pass
+    
+    if user is None:
+        return Response({'detail': 'User not found.'}, status=400)
+    
+    if not user.is_active:
+        traceback.print_exc
+        # Backend Log
+        logger.error(f"Login failed: User {email} account is deactivated", exc_info=True)
+        return Response({'detail': 'User account is deactivated.'}, status=403)
+    
+    user = authenticate(request, username=user.username, password=password)
 
     if user is None:
         logger.error(f"Login failed for email={email}: invalid credentials")
@@ -67,8 +84,8 @@ def login_view(request):
             "access": str(refresh.access_token),
             "refresh": str(refresh),
             "employee_id": user.employee_id,
-            "email": user.email_id,
-            "name": user.employee_name,
+            "email": user.email,
+            "name": user.get_full_name() or user.username,
             "is_staff": user.is_staff,
             "is_superuser": user.is_superuser,
         },
@@ -128,8 +145,8 @@ def me_view(request):
     return Response(
         {
             "employee_id": u.employee_id,
-            "email": u.email_id,
-            "name": u.employee_name,
+            "email": u.email,
+            "name": f"{u.first_name} {u.last_name}",
             "is_staff": u.is_staff,
             "is_superuser": u.is_superuser,
         },

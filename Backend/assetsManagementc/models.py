@@ -1,223 +1,119 @@
 from django.db import models
-from employeeManagement.models import TblEmployeeMaster, TblDepartmentMaster
-# Create your models here.
-class TblAssetCategory(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    asset_category_id = models.CharField(db_column='Asset_Category_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    asset_category = models.CharField(db_column='Asset_Category', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    asset = models.ForeignKey('TblAssetMaster', models.DO_NOTHING, db_column='Asset_ID', blank=True, null=True)  # Field name made lowercase.
-    asset_type = models.ForeignKey('TblAssetType', models.DO_NOTHING, db_column='Asset_Type_ID', blank=True, null=True)  # Field name made lowercase.
+from employeeManagement.models import Vendor
+from employeeManagement.models import Employee
+
+class AssetType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        managed = False
-        db_table = 'Tbl_Asset_Category'
-
-class TblAssetMaster(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    asset_id = models.CharField(db_column='Asset_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    asset_name = models.CharField(db_column='Asset_Name', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    created_date = models.DateTimeField(db_column='Created_date', blank=True, null=True)  # Field name made lowercase.    
-
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Asset_MAster'
-
-
-class TblAssetOwner(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    asset_owner_id = models.CharField(db_column='Asset_Owner_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    assigned_to = models.CharField(db_column='Assigned_To', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    email_id = models.CharField(db_column='Email_Id', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    server_asset = models.ForeignKey('TblServerAsset', models.DO_NOTHING, db_column='Server_Asset_ID', blank=True, null=True)  # Field name made lowercase.
-    location = models.ForeignKey('TblLocationMaster', models.DO_NOTHING, db_column='Location_ID', blank=True, null=True)  
-# Field name made lowercase.
-    department = models.ForeignKey(TblDepartmentMaster, models.DO_NOTHING, db_column='Department_ID', blank=True, null=True)  # Field name made lowercase.
-    employee = models.ForeignKey(TblEmployeeMaster, models.DO_NOTHING, db_column='Employee_ID', blank=True, null=True)  
-# Field name made lowercase.
-    created_date = models.DateTimeField(db_column='Created_Date', blank=True, null=True)  # Field name made lowercase.    
-    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)  # Field name made lowercase.    
-    assign_master = models.ForeignKey('TblAssignMaster', models.DO_NOTHING, db_column='Assign_Master_ID', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Asset_Owner'
-
-class TblAssetPurchaseDetails(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)
-    asset_purchase_id = models.CharField(
-        db_column='Asset_Purchase_ID',
-        primary_key=True,
-        max_length=8,
-        db_collation='SQL_Latin1_General_CP1_CI_AS'
-    )
-    server_asset = models.ForeignKey(
-        'TblServerAsset',
-        models.DO_NOTHING,
-        db_column='Server_Asset_ID',
-        blank=True,
-        null=True
-    )
-    pucase_order_no = models.CharField(
-        db_column='Pucase_Order_No',
-        max_length=200,
-        db_collation='SQL_Latin1_General_CP1_CI_AS',
-        blank=True,
-        null=True
-    )
-    purchase_value = models.FloatField(db_column='Purchase_Value', blank=True, null=True)
-    date_of_purchase = models.DateField(db_column='Date_of_Purchase', blank=True, null=True)
-    date_of_material_inward = models.DateField(db_column='Date_of_Material_Inward', blank=True, null=True)
-    supplier = models.ForeignKey(
-        'TblSupplierMaster',
-        models.DO_NOTHING,
-        db_column='Supplier_ID',
-        blank=True,
-        null=True
-    )
-    created_date = models.DateTimeField(db_column='Created_Date', blank=True, null=True)
-    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Asset_Purchase_Details'
-
-class TblAssetStatus(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)
-    asset_status_id = models.CharField(
-        db_column='Asset_Status_ID',
-        primary_key=True,
-        max_length=9,
-        db_collation='SQL_Latin1_General_CP1_CI_AS'
-    )
-    server_asset = models.ForeignKey(
-        'TblServerAsset',
-        models.DO_NOTHING,
-        db_column='Server_Asset_ID',
-        blank=True,
-        null=True
-    )
-
-    # The real SQL column is: Asset Condition. Good/Fair/Excellent
-    # mssql was splitting at the dot, so force quoting with brackets.
-    asset_condition = models.CharField(
-        db_column='[Asset Condition. Good/Fair/Excellent]',
-        max_length=200,
-        db_collation='SQL_Latin1_General_CP1_CI_AS',
-        blank=True,
-        null=True
-    )
-
-    in_amc = models.IntegerField(db_column='In_AMC', blank=True, null=True)
-    supplier = models.ForeignKey(
-        'TblSupplierMaster',
-        models.DO_NOTHING,
-        db_column='Supplier_ID',
-        blank=True,
-        null=True
-    )
-
-    # Real SQL column is: Period(in_Year)
-    period_in_year_field = models.IntegerField(
-        db_column='[Period(in_Year)]',
-        blank=True,
-        null=True
-    )
-
-    warranty_description = models.CharField(
-        db_column='Warranty_description',
-        max_length=200,
-        db_collation='SQL_Latin1_General_CP1_CI_AS',
-        blank=True,
-        null=True
-    )
-    amc_amount = models.IntegerField(db_column='AMC_Amount', blank=True, null=True)
-
-    # Real SQL columns include spaces. Bracket to be safe.
-    warranty_start_date = models.DateField(
-        db_column='[warranty Start Date]',
-        blank=True,
-        null=True
-    )
-    warranty_over_date = models.DateField(
-        db_column='[Warranty Over date]',
-        blank=True,
-        null=True
-    )
-
-    remarks = models.CharField(
-        db_column='Remarks',
-        max_length=200,
-        db_collation='SQL_Latin1_General_CP1_CI_AS',
-        blank=True,
-        null=True
-    )
-    created_date = models.DateTimeField(db_column='Created_Date', blank=True, null=True)
-    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Asset_Status'
+        db_table = "asset_type"
+        ordering = ["name"]
 
     def __str__(self):
-        return self.asset_status_id   
+        return self.name
+    
+class Asset(models.Model):
+    class Status(models.TextChoices):
+        AVAILABLE = "Available", "Available"
+        ASSIGNED = "Assigned", "Assigned"
+        IN_REPAIR = "In Repair", "In Repair"
+        RETIRED = "Retired", "Retired"    
+    asset_type = models.ForeignKey(AssetType, on_delete=models.PROTECT, related_name="assets")
+    product_name = models.CharField(max_length=150)
+    model_no = models.CharField(max_length=100, blank=True)
+    serial_no = models.CharField(max_length=100, blank=True,null = True)
+    keyboard_sr_no = models.CharField(max_length=100, blank=True)
+    mouse_sr_no = models.CharField(max_length=100, blank=True)
 
-class TblAssetType(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    asset_type_id = models.CharField(db_column='Asset_Type_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    asset_type = models.CharField(db_column='Asset_Type', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    asset = models.ForeignKey('TblAssetMaster', models.DO_NOTHING, db_column='Asset_ID', blank=True, null=True)  # Field name made lowercase.
+    purchase_date = models.DateField(null=True, blank=True)
+    purchase_cost = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Asset_Type'
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True, related_name="assets")
+    is_amc = models.BooleanField(default=False)
+    amc_start_date = models.DateField(null=True, blank=True)
+    amc_end_date = models.DateField(null=True, blank=True)
+    amc_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True, related_name="amc_assets")
+    warranty_expiry = models.DateField(null=True, blank=True)
 
-class TblServerAsset(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    server_asset_id = models.CharField(db_column='Server_Asset_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    server_name_description = models.CharField(db_column='Server_Name_Description', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    asset = models.ForeignKey('TblAssetMaster', models.DO_NOTHING, db_column='Asset_ID', blank=True, null=True)  # Field name made lowercase.
-    asset_type = models.ForeignKey('TblAssetType', models.DO_NOTHING, db_column='Asset_Type_ID', blank=True, null=True)  # Field name made lowercase.
-    asset_category = models.ForeignKey('TblAssetCategory', models.DO_NOTHING, db_column='Asset_Category_ID', blank=True, null=True)  # Field name made lowercase.
-    asset_model_no = models.CharField(db_column='Asset_Model_No', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    is_mission_critical = models.IntegerField(db_column='Is_Mission_Critical', blank=True, null=True)  # Field name made lowercase.
-    asset_serial_number = models.CharField(db_column='Asset_Serial_Number', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    configuration = models.TextField(db_column='Configuration', db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    operating_system = models.CharField(db_column='Operating_System', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)  # Field name made lowercase.    
+    os_version = models.CharField(max_length=120, blank=True)
+    configuration = models.TextField(blank=True)
 
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Server_Asset'  
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.AVAILABLE)
 
-class TblSupplierMaster(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    supplier_id = models.CharField(db_column='Supplier_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    supplier_name = models.CharField(db_column='Supplier_Name', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    email_id = models.CharField(db_column='Email_ID', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    supplier_toll_free_or_support_field = models.CharField(db_column='Supplier Toll Free or Support ', max_length=10, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.
-    is_active = models.BigIntegerField(db_column='Is_Active', blank=True, null=True)  # Field name made lowercase.        
-    created_datedate = models.DateTimeField(db_column='Created_Datedate', blank=True, null=True)  # Field name made lowercase.
-    updated_date = models.DateTimeField(db_column='Updated_Date', blank=True, null=True)  # Field name made lowercase.    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed = False
-        db_table = 'Tbl_Supplier_Master'      
+        db_table = "asset"
+        indexes = [
+            models.Index(fields=["serial_no"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["asset_type"]),
+        ]
+        ordering = ["-created_at"]
 
-class TblLocationMaster(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    location_id = models.CharField(db_column='Location_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    location = models.CharField(db_column='Location', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Tbl_Location_Master'     
-
-class TblAssignMaster(models.Model):
-    id = models.IntegerField(db_column='ID', unique=True)  # Field name made lowercase.
-    assign_master_id = models.CharField(db_column='Assign_Master_ID', primary_key=True, max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS')  # Field name made lowercase.
-    name = models.CharField(db_column='Name', max_length=200, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
-    code = models.CharField(db_column='Code', max_length=8, db_collation='SQL_Latin1_General_CP1_CI_AS', blank=True, null=True)  # Field name made lowercase.
+    def __str__(self):
+        return f"{self.product_name} [{self.serial_no}]"
+    
+class AssetImage(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to="asset_images/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)    
 
     class Meta:
-        managed = False
-        db_table = 'Tbl_Assign_Master'                   
+        db_table = "asset_image"
+        ordering = ["-uploaded_at"]
+
+def __str__(self):
+    return f"{self.asset.serial_no} image {self.id}"
+    
+class AssetAssignment(models.Model):
+    ASSIGNMENT_STATUS = [
+        ('assigned', 'Assigned'),
+        # User-requested statuses
+        ('surrender_requested', 'Surrender Requested'),
+        ('maintenance_requested', 'Maintenance Requested'),
+        ('renew_requested', 'Renew Requested'),
+        ('damaged_requested', 'Damaged Requested'),
+        ('expired_requested', 'Expired Requested'),
+        # Admin decision statuses
+        ('surrender_approved', 'Surrender Approved'),
+        ('surrender_rejected', 'Surrender Rejected'),
+        ('maintenance_approved', 'Maintenance Approved'),
+        ('maintenance_rejected', 'Maintenance Rejected'),
+        ('renew_approved', 'Renew Approved'),
+        ('renew_rejected', 'Renew Rejected'),
+        ('damaged_approved', 'Damaged Approved'),
+        ('damaged_rejected', 'Damaged Rejected'),
+        ('expired_approved', 'Expired Approved'),
+        ('expired_rejected', 'Expired Rejected'),
+    ]
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="assignments")
+    employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name="asset_assignments")
+    assigned_date = models.DateField()
+    returned_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=30, choices=ASSIGNMENT_STATUS, default='assigned')
+    remarks = models.TextField(blank=True)
+     
+    class Meta:
+        db_table = "asset_assignment"
+        ordering = ["-assigned_date"]
+
+def __str__(self):
+    return f"{self.asset.serial_no} -> {self.user.username}"
+
+
+class AssetLog(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="logs")
+    employee = models.CharField(max_length=50)
+    action = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    timestamp = models.DateTimeField()
+
+    class Meta:
+        db_table = "asset_log"
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.timestamp:%Y-%m-%d} {self.asset.serial_no} {self.action}"

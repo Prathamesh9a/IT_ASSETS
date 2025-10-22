@@ -1,41 +1,192 @@
-# assetsManagementc/serializers.py
 from rest_framework import serializers
-from .models import TblServerAsset
+from employeeManagement.models import Employee
+from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment
+from django.utils import timezone
+from django.db import transaction
 
-class BulkAssetImportSerializer(serializers.Serializer):
-    file = serializers.FileField()
-    images_zip = serializers.FileField(required=False, allow_null=True)
-
-class TblServerAssetSerializer(serializers.ModelSerializer):
+class AssetTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TblServerAsset
-        # created_date is not present on this model, updated_date exists but keep read-only
-        read_only_fields = ["id", "updated_date"]
+        model = AssetType
+        fields = ["id", "name", "description"]
+
+
+class AssetImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = AssetImage
+        fields = ["id", "image", "uploaded_at"]
+        read_only_fields = ["id", "uploaded_at"]
+
+class MyAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    amc_vendor_name = serializers.CharField(source="amc_vendor.name", read_only=True, default=None)
+    images = AssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
         fields = [
-            "server_asset_id",
-            "server_name_description",
-            "asset",            # FK to TblAssetMaster
-            "asset_type",       # FK to TblAssetType
-            "asset_category",   # FK to TblAssetCategory
-            "asset_model_no",
-            "is_mission_critical",
-            "asset_serial_number",
-            "configuration",
-            "operating_system",
-            "updated_date",
             "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "keyboard_sr_no",
+            "mouse_sr_no",
+            "purchase_date",
+            "purchase_cost",
+            "vendor_name",
+            "is_amc",
+            "amc_start_date",
+            "amc_end_date",
+            "amc_vendor_name",
+            "warranty_expiry",
+            "os_version",
+            "configuration",
+            "status",
+            "created_at",
+            "updated_at",
+            "images",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class AssetSerializer(serializers.ModelSerializer):
+    # asset_type = serializers.PrimaryKeyRelatedField(queryset=AssetType.objects.all())
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    amc_vendor_name = serializers.CharField(source="amc_vendor.name", read_only=True, default=None)
+    images = AssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "keyboard_sr_no",
+            "mouse_sr_no",
+            "purchase_date",
+            "purchase_cost",
+            "vendor",
+            "vendor_name",
+            "is_amc",
+            "amc_start_date",
+            "amc_end_date",
+            "amc_vendor",
+            "amc_vendor_name",
+            "warranty_expiry",
+            "os_version",
+            "configuration",
+            "status",
+            "created_at",
+            "updated_at",
+            "images",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class AssetCreateSerializer(serializers.ModelSerializer):
+    asset_type = serializers.SlugRelatedField(slug_field="name", queryset=AssetType.objects.all())
+    vendor = serializers.SlugRelatedField(slug_field="name", queryset=Vendor.objects.all(), allow_null=True, required=False)
+    amc_vendor = serializers.SlugRelatedField(slug_field="name", queryset=Vendor.objects.all(), allow_null=True, required=False)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "asset_type",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "keyboard_sr_no",
+            "mouse_sr_no",
+            "purchase_date",
+            "purchase_cost",
+            "vendor",
+            "is_amc",
+            "amc_start_date",
+            "amc_end_date",
+            "amc_vendor",
+            "warranty_expiry",
+            "os_version",
+            "configuration",
+            "status",
         ]
 
-class DepartmentDistributionSerializer(serializers.Serializer):
-    department = serializers.CharField()
-    hardware_assets = serializers.IntegerField()
-    software_licenses = serializers.IntegerField()
-    under_repair = serializers.IntegerField()
-    available = serializers.IntegerField()
+    def validate(self, attrs):
+        if attrs.get("is_amc"):
+            if not attrs.get("amc_vendor"):
+                raise serializers.ValidationError({"amc_vendor": "amc_vendor is required when is_amc is true"})
+            if not attrs.get("amc_start_date") or not attrs.get("amc_end_date"):
+                raise serializers.ValidationError({"amc_dates": "amc_start_date and amc_end_date are required"})
+            if attrs["amc_end_date"] < attrs["amc_start_date"]:
+                raise serializers.ValidationError({"amc_end_date": "amc_end_date must be on or after amc_start_date"})
+        return attrs
+    
 
-class SystemAnalyticsSerializer(serializers.Serializer):
-    total_assets = serializers.IntegerField()
-    active_users = serializers.IntegerField()
-    requests_today = serializers.IntegerField()
-    total_departments = serializers.IntegerField()
-    asset_distribution = DepartmentDistributionSerializer(many=True)
+class AssignAssetSerializer(serializers.Serializer):
+    asset_id = serializers.IntegerField()
+    employee_id = serializers.IntegerField()
+    remarks = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, data):
+        asset = Asset.objects.filter(id=data["asset_id"]).first()
+        if not asset:
+            raise serializers.ValidationError({"asset_id": "Asset not found."})
+        if asset.status != Asset.Status.ASSIGNED.label and asset.status != Asset.Status.AVAILABLE:
+            # handles any unexpected value
+            raise serializers.ValidationError({"asset_id": "Asset status is invalid for assignment."})
+        if asset.status != Asset.Status.AVAILABLE:
+            raise serializers.ValidationError({"asset_id": "Asset is not available."})
+
+        employee = Employee.objects.filter(id=data["employee_id"]).first()
+        if not employee:
+            raise serializers.ValidationError({"employee_id": "Employee not found."})
+
+        active_assignment = AssetAssignment.objects.filter(asset=asset, returned_date__isnull=True).exists()
+        if active_assignment:
+            raise serializers.ValidationError({"asset_id": "Asset already has an active assignment."})
+
+        data["_asset"] = asset
+        data["_employee"] = employee
+        data["_assigned_date"] = timezone.now().date()
+        return data  
+
+class RequestAssignmentSerializer(serializers.Serializer):
+    asset_id = serializers.IntegerField(help_text="Asset ID")
+    status_requested = serializers.ChoiceField(choices=[
+        ("surrender_requested", "Surrender Requested"),
+        ("maintenance_requested", "Maintenance Requested"),
+        ("renew_requested", "Renew Requested"),
+        ("damaged_requested", "Damaged Requested"),
+        ("expired_requested", "Expired Requested"),
+    ])
+    reason = serializers.CharField(required=False, allow_blank=True, help_text="Reason for the request")
+    
+class AssetAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetAssignment
+        fields = "__all__"
+        # keep these read-only if your model has them
+       # read_only_fields = ["assigned_by", "requested_at", "approved_at", "status"]    
+
+class ApproveRejectSerializer(serializers.Serializer):
+    assignment_id = serializers.IntegerField(help_text="AssetAssignment ID")
+    action = serializers.ChoiceField(
+        choices=[("approve", "Approve"), ("reject", "Reject")],
+        help_text="approve or reject"
+    )
+    reason = serializers.CharField(
+        required=False,
+        allow_blank=False,
+        help_text="Reason required when action is reject"
+    )
+
+    def validate(self, data):
+        if data.get("action") == "reject" and not data.get("reason"):
+            raise serializers.ValidationError({"reason": "Reason is required when rejecting"})
+        return data       

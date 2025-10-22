@@ -1,448 +1,404 @@
-import os
-import zipfile
-import logging
-import pandas as pd
-from datetime import datetime
-from django.core.files.base import ContentFile
-from django.db.models import Count, Sum, Max
-from django.utils.timezone import now
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from django.db.models import Count, Sum, Max
-from django.utils.timezone import now
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
-from .models import (
-    TblServerAsset,
-    TblAssetOwner,
-    TblAssetStatus,
-    TblAssetType,
-    TblAssetPurchaseDetails,
-    TblAssetCategory,
-    TblAssetMaster,
-)
-from .serializers import (
-    TblServerAssetSerializer,
-    BulkAssetImportSerializer,
-)
-
-
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from assetsManagementc.utils import set_request_context
-
-from drf_yasg.utils import swagger_auto_schema
+from .models import Asset, AssetAssignment, AssetLog
+from .serializers import AssignAssetSerializer
+from django.utils import timezone
 from drf_yasg import openapi
-
-from .models import TblServerAsset  # use your actual model
-from .serializers import TblServerAssetSerializer
+from drf_yasg.utils import swagger_auto_schema
+from .serializers import MyAssetSerializer
+from .models import Asset, AssetImage, AssetAssignment
+from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer
+from employeeManagement.permissions import IsAdmin,IsUser
+from django.shortcuts import get_object_or_404
 import logging
-
 logger = logging.getLogger(__name__)
 
-type_param = openapi.Parameter(
-    name="type",
-    in_=openapi.IN_QUERY,
-    type=openapi.TYPE_STRING,
-    description="Filter by asset type. Example: Laptop, Desktop, Software",
-    required=False,
-)
 
+def set_request_context(request):
+    return
+
+
+# ---------- LIST EVERY ASSET (no filters, no pagination) ----------
 @swagger_auto_schema(
     method="get",
-    manual_parameters=[type_param],
-    responses={200: TblServerAssetSerializer(many=True)},
-    operation_summary="List server assets",
-    operation_description="Returns all server assets. Optionally filter by asset_type name."
+    operation_summary="List every asset",
+    responses={200: AssetSerializer(many=True)},
 )
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsAdmin])
 def asset_list(request):
     set_request_context(request)
+    try:
+        qs = (
+            Asset.objects
+            .select_related("asset_type", "vendor", "amc_vendor")
+            .prefetch_related("images")
+            .order_by("-created_at")
+        )
+        serializer = AssetSerializer(qs, many=True, context={"request": request})
+        logger.info(f"Asset list retrieved by user {request.user}")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception:
+        logger.error("Unhandled error in asset_list", exc_info=True)
+        return Response({"detail": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    asset_type_name = request.query_params.get("type")
-    qs = TblServerAsset.objects.all()
 
-    if asset_type_name:
-        qs = qs.filter(asset_type__asset_type=asset_type_name)
-
-    serializer = TblServerAssetSerializer(qs, many=True)
-    logger.info("Server asset list retrieved by user %s", request.user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
+# ---------- CREATE WITH IMAGES ----------
+images_param = openapi.Parameter(
+    name="images",
+    in_=openapi.IN_FORM,
+    type=openapi.TYPE_FILE,
+    required=False,
+    description="Upload one or more images. Use the same key images multiple times",
+)
 
 @swagger_auto_schema(
     method="post",
-    request_body=TblServerAssetSerializer,
-    responses={201: TblServerAssetSerializer, 400: "Validation error"},
-    operation_summary="Create server asset",
-    operation_description="Creates a new server asset row."
+    operation_summary="Create asset with optional images",
+    request_body=AssetCreateSerializer,
+    manual_parameters=[images_param],
+    consumes=["multipart/form-data"],
+    responses={201: AssetSerializer},
 )
 @api_view(["POST"])
 @parser_classes([MultiPartParser, FormParser])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsAdmin])
+@transaction.atomic
 def asset_create(request):
     set_request_context(request)
-
-    serializer = TblServerAssetSerializer(data=request.data)
+    serializer = AssetCreateSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    obj = serializer.save()
-    logger.info("Server asset created by user %s", request.user)
-    return Response(TblServerAssetSerializer(obj).data, status=status.HTTP_201_CREATED)
+    asset = serializer.save()
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def dashboard_summary_api(request):
-    today = now().date()
+    files = request.FILES.getlist("images")
+    if files:
+        AssetImage.objects.bulk_create([AssetImage(asset=asset, image=f) for f in files])
 
-    total_server_assets = TblServerAsset.objects.count()
+    out = AssetSerializer(asset).data
+    return Response(out, status=status.HTTP_201_CREATED)
 
-    assigned_assets = (
-        TblAssetOwner.objects
-        .exclude(server_asset__isnull=True)
-        .values('server_asset')
-        .distinct()
-        .count()
-    )
-    unassigned_assets = max(total_server_assets - assigned_assets, 0)
 
-    # By Type
-    _by_type = (
-        TblServerAsset.objects
-        .values('asset_type__asset_type')
-        .annotate(count=Count('server_asset_id'))
-        .order_by('-count')
-    )
-    by_type = [
-        {'label': r['asset_type__asset_type'] or 'Unknown', 'count': r['count']}
-        for r in _by_type
-    ]
 
-    # By Category
-    _by_category = (
-        TblServerAsset.objects
-        .values('asset_category__asset_category')
-        .annotate(count=Count('server_asset_id'))
-        .order_by('-count')
-    )
-    by_category = [
-        {'label': r['asset_category__asset_category'] or 'Unknown', 'count': r['count']}
-        for r in _by_category
-    ]
-
-    # By Location
-    _by_location = (
-        TblAssetOwner.objects
-        .exclude(server_asset__isnull=True)
-        .values('location__location')
-        .annotate(count=Count('server_asset', distinct=True))
-        .order_by('-count')
-    )
-    by_location = [
-        {'label': r['location__location'] or 'Unknown', 'count': r['count']}
-        for r in _by_location
-    ]
-
-    # By Department
-    _by_department = (
-        TblAssetOwner.objects
-        .exclude(server_asset__isnull=True)
-        .values('department__department')
-        .annotate(count=Count('server_asset', distinct=True))
-        .order_by('-count')
-    )
-    by_department = [
-        {'label': r['department__department'] or 'Unknown', 'count': r['count']}
-        for r in _by_department
-    ]
-
-    mission_critical = TblServerAsset.objects.filter(is_mission_critical=1).count()
-
-    # Condition
-    _condition = (
-        TblAssetStatus.objects
-        .values('asset_condition')
-        .annotate(count=Count('server_asset', distinct=True))
-        .order_by('-count')
-    )
-    condition = [
-        {'label': r['asset_condition'] or 'Unknown', 'count': r['count']}
-        for r in _condition
-    ]
-
-    in_amc_count = (
-        TblAssetStatus.objects
-        .filter(in_amc=1)
-        .values('server_asset')
-        .distinct()
-        .count()
-    )
-    amc_amount_total = TblAssetStatus.objects.aggregate(total=Sum('amc_amount'))['total'] or 0
-
-    warranty_active = (
-        TblAssetStatus.objects
-        .filter(warranty_over_date__isnull=False, warranty_over_date__gte=today)
-        .values('server_asset')
-        .distinct()
-        .count()
-    )
-    warranty_expired = (
-        TblAssetStatus.objects
-        .filter(warranty_over_date__isnull=False, warranty_over_date__lt=today)
-        .values('server_asset')
-        .distinct()
-        .count()
-    )
-
-    year = today.year
-    purchases_year_qs = TblAssetPurchaseDetails.objects.filter(date_of_purchase__year=year)
-    purchases = {
-        'year': year,
-        'count': purchases_year_qs.count(),
-        'total_value': purchases_year_qs.aggregate(total=Sum('purchase_value'))['total'] or 0
-    }
-
-    _top_suppliers = (
-        TblAssetPurchaseDetails.objects
-        .exclude(supplier__isnull=True)
-        .values('supplier__supplier_name')
-        .annotate(
-            total_value=Sum('purchase_value'),
-            orders=Count('asset_purchase_id')
-        )
-        .order_by('-total_value')[:10]
-    )
-    top_suppliers = [
-        {
-            'label': r['supplier__supplier_name'] or 'Unknown',
-            'total_value': r['total_value'] or 0,
-            'orders': r['orders']
+assign_success_response = openapi.Response(
+    description="Asset assigned",
+    examples={
+        "application/json": {
+            "detail": "Asset assigned successfully.",
+            "assignment_id": 12,
+            "asset_id": 3,
+            "employee_id": 7,
+            "status": "Assigned"
         }
-        for r in _top_suppliers
-    ]
-
-    _os_breakdown = (
-        TblServerAsset.objects
-        .values('operating_system')
-        .annotate(count=Count('server_asset_id'))
-        .order_by('-count')
-    )
-    os_breakdown = [
-        {'label': r['operating_system'] or 'Unknown', 'count': r['count']}
-        for r in _os_breakdown
-    ]
-
-    last_updated = {
-        'server_asset': TblServerAsset.objects.aggregate(ts=Max('updated_date'))['ts'],
-        'status': TblAssetStatus.objects.aggregate(ts=Max('updated_date'))['ts'],
-        'owner': TblAssetOwner.objects.aggregate(ts=Max('updated_date'))['ts'],
-    }
-
-    data = {
-        'totals': {
-            'server_assets': total_server_assets
-        },
-        'ownership': {
-            'assigned': assigned_assets,
-            'unassigned': unassigned_assets
-        },
-        'by_type': by_type,
-        'by_category': by_category,
-        'by_location': by_location,
-        'by_department': by_department,
-        'mission_critical': mission_critical,
-        'condition': condition,
-        'amc': {
-            'assets_in_amc': in_amc_count,
-            'amc_amount_total': amc_amount_total
-        },
-        'warranty': {
-            'active': warranty_active,
-            'expired': warranty_expired
-        },
-        'purchases': purchases,
-        'top_suppliers': top_suppliers,
-        'os_breakdown': os_breakdown,
-        'last_updated': last_updated
-    }
-
-    return Response(data)
-
-try:
-    from .models import TblServerAssetImage  # FK(server_asset -> TblServerAsset), image = ImageField
-    HAS_IMAGE_MODEL = True
-except Exception:
-    TblServerAssetImage = None
-    HAS_IMAGE_MODEL = False
-
-
-def _coerce_cell(v):
-    if pd.isna(v):
-        return None
-    if isinstance(v, pd.Timestamp):
-        return v.to_pydatetime()
-    if isinstance(v, datetime):
-        return v
-    return v
-
-
-file_param = openapi.Parameter(
-    name="file",
-    in_=openapi.IN_FORM,
-    type=openapi.TYPE_FILE,
-    required=True,
-    description="Excel file with asset rows",
+    },
 )
 
-images_zip_param = openapi.Parameter(
-    name="images_zip",
-    in_=openapi.IN_FORM,
-    type=openapi.TYPE_FILE,
-    required=False,
-    description="Zip containing images. Optional. Use image_names column to map filenames",
+#------------------ASSIGN ASSET------------------
+@swagger_auto_schema(
+    method="post",
+    operation_summary="Assign asset to employee",
+    request_body=AssignAssetSerializer,
+    responses={201: assign_success_response, 400: "Bad Request", 404: "Not Found"},
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+def assign_asset(request):
+    set_request_context(request)
+
+    serializer = AssignAssetSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.error(f"Asset assignment failed: {serializer.errors} by user {request.user}", exc_info=True)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    asset = serializer.validated_data["_asset"]
+    employee = serializer.validated_data["_employee"]
+    remarks = serializer.validated_data.get("remarks", "")
+    assigned_date = serializer.validated_data["_assigned_date"]
+
+    # create assignment
+    assignment = AssetAssignment.objects.create(
+        asset=asset,
+        employee=employee,
+        assigned_date=assigned_date,
+        remarks=remarks,
+    )
+
+    # update asset status
+    asset.status = Asset.Status.ASSIGNED
+    asset.save(update_fields=["status", "updated_at"])
+
+    # log action
+    try:
+        AssetLog.objects.create(
+            asset=asset,
+            employee=str(employee),
+            action="Assigned",
+            description=f"Assigned to employee ID {employee.id}",
+            timestamp=timezone.now(),
+        )
+    except Exception:
+        logger.warning("AssetLog create failed for assignment", exc_info=True)
+
+    logger.info(f"Asset {asset.id} assigned to employee {employee.id} by user {request.user}")
+    return Response(
+        {
+            "detail": "Asset assigned successfully.",
+            "assignment_id": assignment.id,
+            "asset_id": asset.id,
+            "employee_id": employee.id,
+            "status": "Assigned",
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+#----------------My Assets------------
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get assets assigned to the logged-in user",
+    responses={200: MyAssetSerializer(many=True)},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_assets(request):
+    set_request_context(request)
+    employee = request.user
+    # Active assignments only, returned_date is null
+    active_asset_ids = (
+        AssetAssignment.objects
+        .filter(employee=employee, returned_date__isnull=True)
+        .values_list("asset_id", flat=True)
+    )
+
+    qs = (
+        Asset.objects
+        .filter(id__in=active_asset_ids)
+        .select_related("asset_type", "vendor", "amc_vendor")
+        .prefetch_related("images")
+        .order_by("-created_at")
+    )
+
+    data = MyAssetSerializer(qs, many=True, context={"request": request}).data
+    logger.info(f"My assets retrieved for user {request.user}. Count={len(data)}")
+    return Response(data, status=status.HTTP_200_OK)
+
+#------------------request assign----
+request_success_response = openapi.Response(
+    description="Request submitted",
+    examples={
+        "application/json": {
+            "detail": "surrender request submitted.",
+            "asset_id": 5,
+            "requested": "surrender_requested",
+            "timestamp": "2025-10-22T15:45:00+05:30"
+        }
+    },
 )
 
 
 @swagger_auto_schema(
     method="post",
-    manual_parameters=[file_param, images_zip_param],
-    request_body=BulkAssetImportSerializer,
-    consumes=["multipart/form-data"],
-    responses={201: "Created", 207: "Partial Success", 400: "Bad Request"},
-    operation_summary="Bulk import assets",
-    operation_description="Upload Excel. Optional images zip. Creates TblServerAsset rows. Expects FK IDs in columns.",
+    operation_summary="Submit a request for  maintenance, surrender, renew, damaged, or expired",
+    request_body=RequestAssignmentSerializer,
+    responses={200: request_success_response, 400: "Bad Request", 404: "Not Found"},
 )
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser])
-def asset_bulk_import(request):
+@permission_classes([IsAuthenticated,IsUser])
+def request_assignment(request):
     set_request_context(request)
 
-    form = BulkAssetImportSerializer(data=request.data)
-    if not form.is_valid():
-        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = RequestAssignmentSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.error(f"Asset request failed: {serializer.errors} by user {request.user}", exc_info=True)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    excel_file = request.FILES.get("file")
-    zip_file = request.FILES.get("images_zip")
+    asset_id = serializer.validated_data["asset_id"]
+    requested_status = serializer.validated_data["status_requested"]
+    reason = serializer.validated_data.get("reason", "").strip()
 
-    if not excel_file:
-        return Response({"detail": "Excel file is required."}, status=status.HTTP_400_BAD_REQUEST)
+    # get asset
+    try:
+        asset = Asset.objects.get(id=asset_id)
+    except Asset.DoesNotExist:
+        return Response({"detail": "Asset not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # get employee profile
+    employee = request.user
+    # verify active assignment exists for this user and asset
+    has_active = AssetAssignment.objects.filter(
+        asset=asset,
+        employee=employee,
+        returned_date__isnull=True
+    ).exists()
+
+    if not has_active:
+        logger.error(f"Asset request failed: No active assignment for asset {asset.id} and user {request.user}", exc_info=True)
+        return Response({"detail": "No active assignment found."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # record request in AssetLog
+    try:
+        desc_parts = [f"Request: {requested_status.replace('_', ' ')}"]
+        if reason:
+            desc_parts.append(f"Reason: {reason}")
+        description = " | ".join(desc_parts)
+
+        AssetLog.objects.create(
+            asset=asset,
+            employee=str(employee),
+            action="Request",
+            description=description,
+            timestamp=timezone.now(),
+        )
+    except Exception:
+        logger.warning("Failed to write AssetLog for request_assignment", exc_info=True)
+
+    logger.info(f"Asset request: Asset {asset.id} {requested_status} by user {request.user}")
+
+    return Response(
+        {
+            "detail": f"{requested_status.split('_')[0]} request submitted.",
+            "asset_id": asset.id,
+            "requested": requested_status,
+            "timestamp": timezone.now().isoformat(),
+        },
+        status=status.HTTP_200_OK,
+    )
+
+#----------pending request(admin will see all request of asset given by user)
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get all pending asset requests (Admin only)",
+    responses={200: AssetAssignmentSerializer(many=True)},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def pending_requests(request):
+    set_request_context(request)
+
+    # statuses ending with "_requested"
+    pending = AssetAssignment.objects.filter(status__iendswith="requested")
+
+    serializer = AssetAssignmentSerializer(pending, many=True)
+    logger.info(f"Pending requests retrieved by admin {request.user}")
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#----------approve reject request(admin)-------
+decision_success = openapi.Response(
+    description="Decision applied",
+    examples={
+        "application/json": {
+            "detail": "surrender approved.",
+            "assignment_id": 10,
+            "new_status": "surrender_approved",
+            "timestamp": "2025-10-22T16:30:00+05:30"
+        }
+    }
+)
+
+@swagger_auto_schema(
+    method="post",
+    operation_summary="Approve or reject an asset request (Admin only)",
+    request_body=ApproveRejectSerializer,
+    responses={200: decision_success, 400: "Bad Request", 404: "Not Found"}
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def approve_reject_request(request):
+    set_request_context(request)
+
+    serializer = ApproveRejectSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.error(f"Decision failed: {serializer.errors} by {request.user}", exc_info=True)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    assignment = get_object_or_404(AssetAssignment, id=serializer.validated_data["assignment_id"])
+    action = serializer.validated_data["action"]
+    reason = serializer.validated_data.get("reason", "").strip()
+
+    # Expect statuses like surrender_requested, transfer_requested, maintenance_requested, renew_requested, damaged_requested, expired_requested
+    status_val = getattr(assignment, "status", "")
+    if "_requested" not in status_val:
+        return Response({"detail": "This assignment is not in a requested state."}, status=status.HTTP_400_BAD_REQUEST)
+
+    base = status_val.rsplit("_", 1)[0]  # surrender, transfer, maintenance, renew, damaged, expired
+
+    if action == "approve":
+        new_status = f"{base}_approved"
+        assignment.status = new_status
+        # optional timestamps if fields exist on your model
+        if hasattr(assignment, "approved_at"):
+            assignment.approved_at = timezone.now()
+
+        # optional business rules
+        # if surrender or transfer are approved, close current assignment and free the asset
+        if base in {"surrender", "transfer"}:
+            if hasattr(assignment, "returned_date"):
+                assignment.returned_date = timezone.now().date()
+            try:
+                assignment.asset.status = Asset.Status.AVAILABLE
+            except Exception:
+                assignment.asset.status = "Available"
+            assignment.asset.save(update_fields=["status", "updated_at"] if hasattr(assignment.asset, "updated_at") else ["status"])
+
+        assignment.save()
+
+        # audit log
+        try:
+            AssetLog.objects.create(
+                asset=assignment.asset,
+                employee=str(getattr(assignment, "employee", "")),
+                action="Request Approved",
+                description=f"{base} approved",
+                timestamp=timezone.now(),
+            )
+        except Exception:
+            logger.warning("AssetLog write failed for approve_reject_request", exc_info=True)
+
+        logger.info(f"Assignment {assignment.id} {new_status} by admin {request.user}")
+        return Response(
+            {
+                "detail": f"{base} approved.",
+                "assignment_id": assignment.id,
+                "new_status": new_status,
+                "timestamp": timezone.now().isoformat(),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    # reject
+    new_status = f"{base}_rejected"
+    assignment.status = new_status
+    if hasattr(assignment, "approved_at"):
+        # ensure not set on rejection
+        assignment.approved_at = None
+    assignment.save()
 
     try:
-        df = pd.read_excel(excel_file)
+        desc = f"{base} rejected"
+        if reason:
+            desc = f"{desc} | Reason: {reason}"
+        AssetLog.objects.create(
+            asset=assignment.asset,
+            employee=str(getattr(assignment, "employee", "")),
+            action="Request Rejected",
+            description=desc,
+            timestamp=timezone.now(),
+        )
     except Exception:
-        logger.exception("Invalid Excel")
-        return Response({"detail": "Invalid Excel file."}, status=status.HTTP_400_BAD_REQUEST)
+        logger.warning("AssetLog write failed for approve_reject_request (reject)", exc_info=True)
 
-    required_columns = [
-        "server_asset_id",            # PK string like SRV0001
-        "server_name_description",
-        "asset_id",                   # FK to TblAssetMaster.asset_id
-        "asset_type_id",              # FK to TblAssetType.asset_type_id
-        "asset_category_id",          # FK to TblAssetCategory.asset_category_id
-        "asset_model_no",
-        "is_mission_critical",        # 0 or 1
-        "asset_serial_number",
-        "configuration",
-        "operating_system",
-    ]
-    missing = [c for c in required_columns if c not in df.columns]
-    if missing:
-        return Response({"detail": f"Missing columns: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Optional column to map images
-    has_image_names = "image_names" in df.columns
-
-    zip_images = {}
-    if zip_file:
-        try:
-            zf = zipfile.ZipFile(zip_file)
-            # Normalize keys for fast lookup
-            zip_images = {os.path.basename(n): zf.read(n) for n in zf.namelist() if not n.endswith("/")}
-        except Exception:
-            logger.exception("Invalid images zip")
-            return Response({"detail": "Invalid images zip."}, status=status.HTTP_400_BAD_REQUEST)
-
-    created = []
-    errors = []
-
-    for idx, row in df.iterrows():
-        rownum = idx + 2  # header on row 1
-        data = {k: _coerce_cell(row.get(k)) for k in required_columns}
-
-        # Resolve FKs by IDs from the sheet
-        try:
-            asset_fk = None
-            if data["asset_id"]:
-                asset_fk = TblAssetMaster.objects.get(asset_id=str(data["asset_id"]))
-
-            type_fk = None
-            if data["asset_type_id"]:
-                type_fk = TblAssetType.objects.get(asset_type_id=str(data["asset_type_id"]))
-
-            category_fk = None
-            if data["asset_category_id"]:
-                category_fk = TblAssetCategory.objects.get(asset_category_id=str(data["asset_category_id"]))
-        except TblAssetMaster.DoesNotExist:
-            errors.append({"row": rownum, "error": f"asset_id not found: {data['asset_id']}"})
-            continue
-        except TblAssetType.DoesNotExist:
-            errors.append({"row": rownum, "error": f"asset_type_id not found: {data['asset_type_id']}"})
-            continue
-        except TblAssetCategory.DoesNotExist:
-            errors.append({"row": rownum, "error": f"asset_category_id not found: {data['asset_category_id']}"})
-            continue
-        except Exception as e:
-            errors.append({"row": rownum, "error": f"FK resolution error: {str(e)}"})
-            continue
-
-        payload = {
-            "server_asset_id": data["server_asset_id"],
-            "server_name_description": data["server_name_description"],
-            "asset": asset_fk.asset_id if asset_fk else None,
-            "asset_type": type_fk.asset_type_id if type_fk else None,
-            "asset_category": category_fk.asset_category_id if category_fk else None,
-            "asset_model_no": data["asset_model_no"],
-            "is_mission_critical": int(data["is_mission_critical"] or 0),
-            "asset_serial_number": data["asset_serial_number"],
-            "configuration": data["configuration"],
-            "operating_system": data["operating_system"],
-        }
-
-        ser = TblServerAssetSerializer(data=payload)
-        if not ser.is_valid():
-            errors.append({"row": rownum, "errors": ser.errors})
-            continue
-
-        obj = ser.save()
-
-        # Attach images if present
-        if has_image_names and HAS_IMAGE_MODEL and zip_images:
-            names_cell = row.get("image_names")
-            if not pd.isna(names_cell) and str(names_cell).strip():
-                for raw in str(names_cell).split(","):
-                    fname = os.path.basename(raw.strip())
-                    if not fname:
-                        continue
-                    content = zip_images.get(fname)
-                    if content is None:
-                        errors.append({"row": rownum, "image_error": f'Image "{fname}" not found in zip'})
-                        continue
-                    cf = ContentFile(content)
-                    cf.name = fname
-                    TblServerAssetImage.objects.create(server_asset=obj, image=cf)
-
-        created.append(TblServerAssetSerializer(obj).data)
-
-    if errors:
-        return Response({"created": created, "errors": errors}, status=status.HTTP_207_MULTI_STATUS)
-
-    return Response({"created": created}, status=status.HTTP_201_CREATED)
+    logger.info(f"Assignment {assignment.id} {new_status} by admin {request.user}")
+    return Response(
+        {
+            "detail": f"{base} rejected.",
+            "assignment_id": assignment.id,
+            "new_status": new_status,
+            "timestamp": timezone.now().isoformat(),
+        },
+        status=status.HTTP_200_OK,
+    )

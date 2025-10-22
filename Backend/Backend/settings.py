@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'logs',
 ]
 
-AUTH_USER_MODEL = 'employeeManagement.TblEmployeeMaster'
+AUTH_USER_MODEL = 'employeeManagement.Employee'
 
 MIDDLEWARE = [
     "logs.context.RequestContextMiddleware",  # if you create it; else remove this line
@@ -206,41 +206,41 @@ SWAGGER_SETTINGS = {
     'SECURITY_REQUIREMENTS': [{'Bearer': []}],
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'timestamped': {
-            'format': '[%(asctime)s] %(message)s',
-            'datefmt': '%d/%b/%Y %H:%M:%S',
-        },
-    },
-    'handlers': {
-        'db': {
-            'level': 'ERROR',
-            'class': 'logs.views.DatabaseLogHandler',
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'timestamped',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['db'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-        'custom': {
-            'handlers': ['db'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'django.server': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    }
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'timestamped': {
+#             'format': '[%(asctime)s] %(message)s',
+#             'datefmt': '%d/%b/%Y %H:%M:%S',
+#         },
+#     },
+#     'handlers': {
+#         'db': {
+#             'level': 'ERROR',
+#             'class': 'logs.views.DatabaseLogHandler',
+#         },
+#         'console': {
+#             'level': 'INFO',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'timestamped',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['db'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#         'custom': {
+#             'handlers': ['db'],
+#             'level': 'ERROR',
+#             'propagate': False,
+#         },
+#         'django.server': {
+#             'handlers': ['console'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#     }
+# }

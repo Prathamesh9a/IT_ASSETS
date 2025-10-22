@@ -59,7 +59,7 @@ urlpatterns = [
     path("api/v1/auth/", include('accounts.urls')),
     path("api/v1/", include('employeeManagement.urls')),
     path("api/v1/assets/", include("assetsManagementc.urls")),
-    # path("api/v1/assets/", include('assetsManagement.urls')),
+    
     # path("api/v1/notifications/", include('notifications.urls')),
     # path("api/v1/logs/", include('logs.urls')),
     # path("api/v1/settings/", include('settings.urls')),
