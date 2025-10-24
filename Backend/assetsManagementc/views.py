@@ -10,8 +10,8 @@ from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import MyAssetSerializer
-from .models import Asset, AssetImage, AssetAssignment
-from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer, AssetUpdateSerializer,DeleteAssetsSerializer
+from .models import Asset, AssetImage, AssetAssignment,AssetType
+from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer, AssetUpdateSerializer,DeleteAssetsSerializer,AssetTypeSerializer
 from employeeManagement.permissions import IsAdmin,IsUser
 from django.shortcuts import get_object_or_404
 from django.shortcuts import get_list_or_404
@@ -144,18 +144,21 @@ success_example = openapi.Response(
     description="Soft delete applied",
     examples={
         "application/json": {
-            "detail": "Assets marked as not available.",
-            "updated": [
-                {"asset_id": 3, "new_status": "Retired"},
-                {"asset_id": 7, "new_status": "Retired"}
+            "detail": "Soft delete processed.",
+            "retired": [
+                {"asset_id": 3, "new_status": "Retired"}
+            ],
+            "skipped": [
+                {"asset_id": 7, "reason": "Asset is not Available"}
             ]
         }
     },
 )
 
+
 @swagger_auto_schema(
     method="post",
-    operation_summary="Soft delete assets, mark as not available (Admin only)",
+    operation_summary="Deactivate assets (Admin only). Only assets in Available status will be Retired",
     request_body=DeleteAssetsSerializer,
     responses={200: success_example, 400: "Bad Request", 404: "Not Found"},
 )
@@ -164,9 +167,14 @@ success_example = openapi.Response(
 @transaction.atomic
 def delete_assets(request):
     """
-    Soft delete: set Asset.status to Retired so it is not available for assignment.
-    Also closes any active assignments and writes an audit log.
+    Deactivate assets:
+    - If asset.status == 'Available', set status to 'Retired'
+    - If asset is Assigned, or already Requested, skip it
+    - Do not hard delete
+    - Do not unassign automatically for skipped assets
     """
+    set_request_context(request)
+
     serializer = DeleteAssetsSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -174,30 +182,83 @@ def delete_assets(request):
     asset_ids = serializer.validated_data["asset_ids"]
     reason = serializer.validated_data.get("reason", "").strip()
 
-    # Fetch all assets; 404 if any ID is invalid
+    # Fetch all matching assets, 404 if any ID not found
     assets = get_list_or_404(Asset, id__in=asset_ids)
 
-    updated = []
     now = timezone.now()
+    retired_list = []
+    skipped_list = []
 
     for asset in assets:
-        # close active assignments for this asset
-        active_qs = AssetAssignment.objects.filter(asset=asset, returned_date__isnull=True)
-        for assign in active_qs:
-            assign.returned_date = now.date()
-            assign.remarks = (assign.remarks or "")
-            if reason:
-                assign.remarks = f"{assign.remarks}\nSoft delete reason: {reason}".strip()
-            assign.save(update_fields=["returned_date", "remarks"])
+        current_status = (asset.status or "").strip()
 
-        # mark asset as not available by setting status to Retired
+        # Only Available assets are allowed to be retired
+        if current_status != Asset.Status.AVAILABLE:
+            # asset is Assigned, In Repair, Retired, or any *_requested state in assignment
+            skipped_list.append({
+                "asset_id": asset.id,
+                "reason": f"Asset is {current_status}, cannot deactivate"
+            })
+            continue
+
+        # Check if any active assignment still exists for safety
+        # If any AssetAssignment with returned_date null, we treat it as "in use"
+        active_assign_qs = AssetAssignment.objects.filter(
+            asset=asset,
+            returned_date__isnull=True
+        )
+
+        if active_assign_qs.exists():
+            # If assignment exists, we refuse to retire it
+            skipped_list.append({
+                "asset_id": asset.id,
+                "reason": "Asset is assigned, cannot deactivate"
+            })
+            continue
+
+        # Also check if there's any pending request on this asset
+        # status ending with '_requested' means user raised a workflow
+        requested_exists = AssetAssignment.objects.filter(
+            asset=asset,
+            status__iendswith="requested",
+            returned_date__isnull=True
+        ).exists()
+
+        if requested_exists:
+            skipped_list.append({
+                "asset_id": asset.id,
+                "reason": "Asset has a pending request, cannot deactivate"
+            })
+            continue
+
+        # Safe to retire this asset
         try:
             asset.status = Asset.Status.RETIRED
         except Exception:
-            asset.status = "Retired"  # fallback if Status enum changes
-        asset.save(update_fields=["status", "updated_at"] if hasattr(asset, "updated_at") else ["status"])
+            asset.status = "Retired"
 
-        # audit log
+        # Save asset new status
+        if hasattr(asset, "updated_at"):
+            asset.save(update_fields=["status", "updated_at"])
+        else:
+            asset.save(update_fields=["status"])
+
+        # Close any lingering assignments (belt and suspenders, should not hit because of early continue)
+        # We still do it for correctness if something slipped through
+        stale_assign_qs = AssetAssignment.objects.filter(
+            asset=asset,
+            returned_date__isnull=True
+        )
+        for assign in stale_assign_qs:
+            assign.returned_date = now.date()
+            if reason:
+                if assign.remarks:
+                    assign.remarks = f"{assign.remarks}\nSoft delete reason: {reason}"
+                else:
+                    assign.remarks = f"Soft delete reason: {reason}"
+            assign.save(update_fields=["returned_date", "remarks"])
+
+        # Audit in AssetLog
         try:
             desc = "Marked not available (soft delete)"
             if reason:
@@ -212,13 +273,62 @@ def delete_assets(request):
         except Exception:
             logger.warning("Failed to write AssetLog for soft delete", exc_info=True)
 
-        updated.append({"asset_id": asset.id, "new_status": str(asset.status)})
+        retired_list.append({
+            "asset_id": asset.id,
+            "new_status": str(asset.status),
+        })
 
-    logger.info(f"Soft-deleted assets by {request.user}: {updated}")
+    logger.info(
+        f"Soft delete processed by {request.user}. retired={retired_list} skipped={skipped_list}"
+    )
+
     return Response(
-        {"detail": "Assets marked as not available.", "updated": updated},
+        {
+            "detail": "Soft delete processed.",
+            "retired": retired_list,
+            "skipped": skipped_list,
+        },
         status=status.HTTP_200_OK,
     )
+#----------------GET ASSET TYPES----------
+asset_type_list_response = openapi.Response(
+    description="List of asset types",
+    examples={
+        "application/json": [
+            {
+                "id": 1,
+                "name": "Laptop",
+                "description": "Portable computer",
+            },
+            {
+                "id": 2,
+                "name": "Desktop",
+                "description": "Tower or workstation PC",
+            },
+            {
+                "id": 3,
+                "name": "Monitor",
+                "description": "Display device",
+            }
+        ]
+    },
+)
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get all asset types",
+    responses={200: asset_type_list_response},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated,IsAdmin])
+def get_asset_types(request):
+    set_request_context(request)
+
+    qs = AssetType.objects.all().order_by("name")
+    data = AssetTypeSerializer(qs, many=True).data
+
+    logger.info(f"Asset types fetched by {request.user}")
+    return Response(data, status=status.HTTP_200_OK)
 
 #------------------ASSIGN ASSET------------------
 @swagger_auto_schema(
@@ -228,7 +338,7 @@ def delete_assets(request):
     responses={201: assign_success_response, 400: "Bad Request", 404: "Not Found"},
 )
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsAdmin])
 @transaction.atomic
 def assign_asset(request):
     set_request_context(request)
@@ -286,7 +396,7 @@ def assign_asset(request):
     responses={200: MyAssetSerializer(many=True)},
 )
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsUser])
 def my_assets(request):
     set_request_context(request)
     employee = request.user
@@ -325,12 +435,12 @@ request_success_response = openapi.Response(
 
 @swagger_auto_schema(
     method="post",
-    operation_summary="Submit a request for  maintenance, surrender, renew, damaged, or expired",
+    operation_summary="Submit a request for maintenance, surrender, renew, damaged, expired",
     request_body=RequestAssignmentSerializer,
     responses={200: request_success_response, 400: "Bad Request", 404: "Not Found"},
 )
 @api_view(["POST"])
-@permission_classes([IsAuthenticated,IsUser])
+@permission_classes([IsAuthenticated, IsUser])
 def request_assignment(request):
     set_request_context(request)
 
@@ -343,26 +453,55 @@ def request_assignment(request):
     requested_status = serializer.validated_data["status_requested"]
     reason = serializer.validated_data.get("reason", "").strip()
 
-    # get asset
+    # 1. Get asset
     try:
         asset = Asset.objects.get(id=asset_id)
     except Asset.DoesNotExist:
         return Response({"detail": "Asset not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # get employee profile
+    # 2. Get "employee" for this request
+    # You changed your code to treat the user as employee directly
     employee = request.user
-    # verify active assignment exists for this user and asset
-    has_active = AssetAssignment.objects.filter(
+
+    # 3. Find the active assignment record for this asset and this user
+    assignment = AssetAssignment.objects.filter(
         asset=asset,
         employee=employee,
         returned_date__isnull=True
-    ).exists()
+    ).order_by("-id").first()
 
-    if not has_active:
-        logger.error(f"Asset request failed: No active assignment for asset {asset.id} and user {request.user}", exc_info=True)
+    if not assignment:
+        logger.error(
+            f"Asset request failed: No active assignment for asset {asset.id} and user {request.user}",
+            exc_info=True
+        )
         return Response({"detail": "No active assignment found."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # record request in AssetLog
+    # 4. Update the AssetAssignment row so admin can see it in pending
+    # expected patterns:
+    # surrender_requested
+    # maintenance_requested
+    # renew_requested
+    # damaged_requested
+    # expired_requested
+    assignment.status = requested_status
+
+    # optional: if your AssetAssignment model has requested_at field, set it
+    if hasattr(assignment, "requested_at"):
+        assignment.requested_at = timezone.now()
+
+    # optional: keep reason
+    if hasattr(assignment, "remarks"):
+        # append reason to remarks instead of overwriting
+        if reason:
+            if assignment.remarks:
+                assignment.remarks = f"{assignment.remarks}\nUser request: {reason}"
+            else:
+                assignment.remarks = f"User request: {reason}"
+
+    assignment.save()
+
+    # 5. Write audit into AssetLog for history
     try:
         desc_parts = [f"Request: {requested_status.replace('_', ' ')}"]
         if reason:
@@ -379,7 +518,10 @@ def request_assignment(request):
     except Exception:
         logger.warning("Failed to write AssetLog for request_assignment", exc_info=True)
 
-    logger.info(f"Asset request: Asset {asset.id} {requested_status} by user {request.user}")
+    # 6. Log and respond
+    logger.info(
+        f"Asset request: Asset {asset.id} {requested_status} by user {request.user}"
+    )
 
     return Response(
         {

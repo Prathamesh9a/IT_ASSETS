@@ -3,7 +3,7 @@ from employeeManagement.models import Employee
 from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment
 from django.utils import timezone
 from django.db import transaction
-
+from .models import AssetType
 class AssetTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssetType
@@ -177,9 +177,22 @@ class DeleteAssetsSerializer(serializers.Serializer):
     asset_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
         allow_empty=False,
-        help_text="List of asset IDs to mark as not available"
+        help_text="List of asset IDs to deactivate"
     )
-    reason = serializers.CharField(required=False, allow_blank=True, help_text="Optional reason")
+    reason = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Reason for deactivation"
+    )
+class AssetTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetType
+        fields = [
+            "id",
+            "name",
+            "description",
+        ]
+        read_only_fields = ["id"]
 
 class AssignAssetSerializer(serializers.Serializer):
     asset_id = serializers.IntegerField()
@@ -218,8 +231,11 @@ class RequestAssignmentSerializer(serializers.Serializer):
         ("damaged_requested", "Damaged Requested"),
         ("expired_requested", "Expired Requested"),
     ])
-    reason = serializers.CharField(required=False, allow_blank=True, help_text="Reason for the request")
-    
+    reason = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Why you are raising this request"
+    )
 class AssetAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssetAssignment

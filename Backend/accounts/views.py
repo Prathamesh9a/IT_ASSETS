@@ -86,7 +86,6 @@ def login_view(request):
             "employee_id": user.employee_id,
             "email": user.email,
             "name": user.get_full_name() or user.username,
-            "is_staff": user.is_staff,
             "is_superuser": user.is_superuser,
             "role": user.role
         },
@@ -148,8 +147,8 @@ def me_view(request):
             "employee_id": u.employee_id,
             "email": u.email,
             "name": f"{u.first_name} {u.last_name}",
-            "is_staff": u.is_staff,
             "is_superuser": u.is_superuser,
+            "role":u.role
         },
         status=200,
     )
