@@ -33,14 +33,6 @@ SECRET_KEY = 'django-insecure-w!&i+r(ljayt&y=i*alnjh7223mqws7&9mhiw&qj9ijdjpi-nc
 DEBUG = config.getboolean('ITAssets', 'DEBUG')
 ALLOWED_HOSTS = ['*']
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-]
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -65,6 +57,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'employeeManagement.Employee'
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "logs.context.RequestContextMiddleware",  # if you create it; else remove this line
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -73,6 +66,20 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Allow frontend to call backend
+CORS_ALLOW_ALL_ORIGINS = True   # temporary for dev
+# safer option:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",  # React dev server
+# ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://10.235.55.52", # if React is served directly
+    "http://10.235.55.52:6770", # React dev server (optional)
+    "http://localhost:6770",
+    "http://127.0.0.1:6770",
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -107,8 +114,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PSWD,
+        # 'USER': DB_USER,
+        # 'PASSWORD': DB_PSWD,
         'HOST': DB_HOST,  # or your SQL Server host
         'PORT': '',           # default port is 1433
         'OPTIONS': {
