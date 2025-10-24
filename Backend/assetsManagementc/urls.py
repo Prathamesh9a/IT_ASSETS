@@ -13,6 +13,8 @@ urlpatterns = [
     path('request/', v.request_assignment, name='request'),
     path('pending/', v.pending_requests, name='pending-requests'),
     path("requests/decision/", v.approve_reject_request, name="approve-reject-request"),
+    path("<int:pk>/", v.asset_update, name="asset-update"),
+    path("delete/", v.delete_assets, name="asset-soft-delete"),
 ]
 
 

@@ -128,6 +128,59 @@ class AssetCreateSerializer(serializers.ModelSerializer):
         return attrs
     
 
+class AssetUpdateSerializer(serializers.ModelSerializer):
+    # accept FK ids on update (optional)
+    asset_type = serializers.PrimaryKeyRelatedField(queryset=AssetType.objects.all(), required=False, allow_null=True)
+    vendor = serializers.PrimaryKeyRelatedField(queryset=Vendor.objects.all(), required=False, allow_null=True)
+    amc_vendor = serializers.PrimaryKeyRelatedField(queryset=Vendor.objects.all(), required=False, allow_null=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "asset_type",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "keyboard_sr_no",
+            "mouse_sr_no",
+            "purchase_date",
+            "purchase_cost",
+            "vendor",
+            "is_amc",
+            "amc_start_date",
+            "amc_end_date",
+            "amc_vendor",
+            "warranty_expiry",
+            "os_version",
+            "configuration",
+            "status",
+        ]
+        extra_kwargs = {f: {"required": False} for f in fields}
+
+    def validate(self, attrs):
+        # when enabling AMC, dates and vendor must be present
+        is_amc = attrs.get("is_amc", getattr(self.instance, "is_amc", False))
+        amc_vendor = attrs.get("amc_vendor", getattr(self.instance, "amc_vendor", None))
+        amc_start = attrs.get("amc_start_date", getattr(self.instance, "amc_start_date", None))
+        amc_end = attrs.get("amc_end_date", getattr(self.instance, "amc_end_date", None))
+
+        if is_amc:
+            if not amc_vendor:
+                raise serializers.ValidationError({"amc_vendor": "amc_vendor is required when is_amc is true"})
+            if not amc_start or not amc_end:
+                raise serializers.ValidationError({"amc_dates": "amc_start_date and amc_end_date are required when is_amc is true"})
+            if amc_end < amc_start:
+                raise serializers.ValidationError({"amc_end_date": "amc_end_date must be on or after amc_start_date"})
+        return attrs
+
+class DeleteAssetsSerializer(serializers.Serializer):
+    asset_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+        help_text="List of asset IDs to mark as not available"
+    )
+    reason = serializers.CharField(required=False, allow_blank=True, help_text="Optional reason")
+
 class AssignAssetSerializer(serializers.Serializer):
     asset_id = serializers.IntegerField()
     employee_id = serializers.IntegerField()

@@ -88,6 +88,7 @@ def login_view(request):
             "name": user.get_full_name() or user.username,
             "is_staff": user.is_staff,
             "is_superuser": user.is_superuser,
+            "role": user.role
         },
         status=200,
     )
