@@ -5,14 +5,14 @@ import { baseQueryWithReauth } from "./baseQueryWithReauth";
 export const assetsApi = createApi({
   reducerPath: "assetsApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Assets"], 
+  tagTypes: ["Assets"],
   endpoints: (builder) => ({
     getAssets: builder.query({
-      query: () => "/assets/", 
+      query: () => "/assets/",
       providesTags: ["Assets"],
     }),
     getAssetById: builder.query({
-      query: (id) => `/assets/${id}/`, 
+      query: (id) => `/assets/${id}/`,
       providesTags: ["Assets"],
     }),
     createAsset: builder.mutation({
@@ -21,12 +21,12 @@ export const assetsApi = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Assets"], 
+      invalidatesTags: ["Assets"],
     }),
     updateAsset: builder.mutation({
       query: ({ id, data }) => ({
         url: `/assets/${id}/`,
-        method: "PUT", 
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: ["Assets"],
@@ -75,7 +75,7 @@ export const assetsApi = createApi({
         url: `/assets/${id}/upload-images/`,
         method: "POST",
         body: data,
-        headers:{}
+        headers: {},
       }),
       invalidatesTags: ["Assets"],
     }),
@@ -111,7 +111,7 @@ export const assetsApi = createApi({
         url: `/assets/import/`,
         method: "POST",
         body: data,
-        headers:{}
+        headers: {},
       }),
       invalidatesTags: ["Assets"],
     }),

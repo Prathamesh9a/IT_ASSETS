@@ -213,6 +213,7 @@
 // // ✅ Prevents re-renders unless props change
 // export default React.memo(Header);
 import React, { useCallback } from "react";
+import logo from "../../public/images/logo.png";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/Avatar";
 import {
@@ -266,7 +267,9 @@ const Header = ({ great, showNotification, userName }) => {
 
   return (
     <div className="w-full fixed inset-0 z-[500] px-6 h-16 bg-white shadow-[0px_-5px_25px_0px_#00000040] flex items-center justify-between">
-      <h1 className="roboto font-bold text-[35px]">LOGO</h1>
+      <div className="">
+        <img src={logo} className="object-contain h-10" alt="" />
+      </div>
 
       <div className="flex items-center space-x-2">
         {/* Greeting + Dept */}
@@ -275,8 +278,9 @@ const Header = ({ great, showNotification, userName }) => {
           {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
           ) : (
-          <span className="text-gray-800">{data?.department ? `${data.department} Dept` : ""}</span>
-
+            <span className="text-gray-800">
+              {data?.department ? `${data.department} Dept` : ""}
+            </span>
           )}
           <div className="w-[1.5px] h-[35px] bg-[#808080]"></div>
         </h1>

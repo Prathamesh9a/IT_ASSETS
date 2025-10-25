@@ -12,7 +12,10 @@ import { useNavigate } from "react-router-dom";
 import { useGetAssetsQuery } from "@/store/api/assetsApi";
 import { useGetDepartmentsQuery } from "@/store/api/settingsApi";
 import { useGetEmployeesQuery } from "@/store/api/employeeApi";
-const SuperAdminDashboard = () => {
+const DashboardTable = () => {
+  const { data, isLoading } = useGetAssetsQuery();
+  console.log("dtata", data);
+
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const { data: getAsset, isLoading: getAssetIsLoading } = useGetAssetsQuery();
@@ -58,26 +61,7 @@ const SuperAdminDashboard = () => {
   const iconKeys = ["assetsSvg1", "assetsSvg2", "assetsSvg3", "assetsSvg4"];
 
   const [activeTab, setActiveTab] = useState(tabs[0]); // default: Overview
-  //     const handleTabChange = (tab) => {
-  //     setActiveTab(tab) // Update selected tab
-  //   }
 
-  //   const renderTabContent = () => {
-  //     switch (activeTab) {
-  //       case "Overview":
-  //         return <Overview />
-  //       case "Asset Management":
-  //         return <AssetManagement />
-  //       case "System Audit":
-  //         return <SystemAudit />
-  //       case "Reports":
-  //         return <Reports />
-  //       case "Setting":
-  //         return <Setting />
-  //       default:
-  //         return null
-  //     }
-  //   }
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     // Call API depending on the tab
@@ -128,10 +112,9 @@ const SuperAdminDashboard = () => {
         dept={"(System Administrator)"}
         showNotification={true}
       />
-      <div className="px-6 mt-14">
-        <NavigationTabs tabs={tabs} onTabChange={handleTabChange} />
+      <div className=" ">
         <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
-          System Analytics
+          Assets
         </h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 mt-5 md:mt-6 border-b-[2px] border-b-[#E1E1E1] pb-4">
           {Array.from({ length: 4 }).map((_, index) => {
@@ -152,53 +135,90 @@ const SuperAdminDashboard = () => {
         </h1>
         {/* tabel */}
         <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-6 md:mt-6">
-          <div className="max-h-[400px] max-w-6xl mx-auto md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
-            <table className="table-auto w-full min-w-max">
+          <div className="max-h-[400px]  mx-auto md:max-h-[440px] overflow-y-auto  border border-gray-200 rounded-lg">
+            <table className=" w-full min-w-max overflow-x-auto">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
                   <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0]  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Department
+                    Type Name
                   </th>
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Hardware Assets
+                    Product Name
                   </th>
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Software Licenses
-                  </th>
+                    Modal Number
+                  </th>{" "}
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Under Repair
+                    Purchase Date
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    Vendor Name
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    Is AMC
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    AMC Start Date
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    AMC End Date
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    AMC Vender Name
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    Warrenty Expiry{" "}
+                  </th>{" "}
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                    Status
                   </th>
                   <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Available
+                    Configuration
                   </th>
                 </tr>
               </thead>
 
               <tbody>
-                {tableData?.map((item, index) => (
+                {data?.map((item, index) => (
                   <tr key={index} className="border-b border-gray-200">
                     {/* <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
                         <img src={item.image} alt="" className='  h-20' />
                     </td> */}
                     <td className=" whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.Department}
+                      {item.asset_type_name}
                     </td>
                     <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item["Hardware Assets"]}
+                      {item.product_name}
                     </td>
                     <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item["Software Licenses"]}
+                      {item.model_no}
                     </td>
-                    {/* <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <div className="flex justify-center ">
-                        <StatusButton status={item.status} />
-                      </div>
-                    </td> */}
+                    <td className=" whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.purchase_date}
+                    </td>
                     <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item["Under Repair"]}
+                      {item.vendor_name}
+                    </td>
+                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.is_amc ? "Yes" : "No"}
+                    </td>{" "}
+                    <td className=" whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.amc_start_date}
+                    </td>
+                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.amc_end_date}
+                    </td>
+                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.amc_vendor_name}
+                    </td>
+                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.warranty_expiry}
+                    </td>
+                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                      {item.status}
                     </td>
                     <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.Available}
+                      {item.configuration}
                     </td>
                   </tr>
                 ))}
@@ -216,26 +236,10 @@ const SuperAdminDashboard = () => {
           >
             Add new Assets
           </Button>
-          <Button
-            onClick={() =>
-              navigate(
-                `/addAssets?bulkAssetStatus=${encodeURIComponent("true")}`
-              )
-            }
-            className="flex-shrink-0 min-w-[185px] rounded-full py-2.5 px-5 poppins-medium md:text-xl text-base text-white cursor-pointer bg-[#000C63] hover:bg-[#8A5CFF]"
-          >
-            Bulk Import Assets
-          </Button>
-          <Button
-            onClick={() => navigate("/AddEmployee")}
-            className="flex-shrink-0 min-w-[185px] rounded-full py-2.5 px-5 poppins-medium md:text-xl text-base text-white cursor-pointer bg-[#794CFF] hover:bg-[#8A5CFF]"
-          >
-            Add Employee
-          </Button>
         </div>
       </div>
     </>
   );
 };
 
-export default SuperAdminDashboard;
+export default DashboardTable;
