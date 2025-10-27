@@ -88,6 +88,7 @@ class AssetAssignment(models.Model):
         ('damaged_rejected', 'Damaged Rejected'),
         ('expired_approved', 'Expired Approved'),
         ('expired_rejected', 'Expired Rejected'),
+        ("revoked", "Revoked"),
     ]
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="assignments")
     employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name="asset_assignments")

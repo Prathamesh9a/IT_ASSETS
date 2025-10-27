@@ -221,6 +221,65 @@ class AssignAssetSerializer(serializers.Serializer):
         data["_employee"] = employee
         data["_assigned_date"] = timezone.now().date()
         return data  
+class AssignedEmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+        ]
+class AssignedAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    images =AssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]        
+class AssignedAssetListRowSerializer(serializers.ModelSerializer):
+    asset = AssignedAssetSerializer(read_only=True)
+    employee = AssignedEmployeeSerializer(read_only=True)
+
+    class Meta:
+        model = AssetAssignment
+        fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]
+
+class RevokeAssetSerializer(serializers.Serializer):
+    asset_id = serializers.IntegerField(help_text="Asset ID to revoke")
+    employee_id = serializers.IntegerField(help_text="Employee ID who currently holds this asset")
+    remarks = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Optional note for why this asset was revoked"
+    )
 
 class RequestAssignmentSerializer(serializers.Serializer):
     asset_id = serializers.IntegerField(help_text="Asset ID")
@@ -237,9 +296,29 @@ class RequestAssignmentSerializer(serializers.Serializer):
         help_text="Why you are raising this request"
     )
 class AssetAssignmentSerializer(serializers.ModelSerializer):
+    asset = AssignedAssetSerializer(read_only=True)
+    employee = AssignedEmployeeSerializer(read_only=True)
+
     class Meta:
         model = AssetAssignment
-        fields = "__all__"
+        fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "returned_date",
+            "status",
+            "remarks",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "returned_date",
+            "status",
+            "remarks",
+        ]
         # keep these read-only if your model has them
        # read_only_fields = ["assigned_by", "requested_at", "approved_at", "status"]    
 
