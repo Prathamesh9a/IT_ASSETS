@@ -256,7 +256,7 @@ const AdminDashboard = () => {
                         Asset
                       </th>
                       <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                        Request Type
+                        Type
                       </th>
                       <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                         Status
