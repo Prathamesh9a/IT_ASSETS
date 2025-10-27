@@ -1071,13 +1071,27 @@ const AddNewAsset = () => {
                   </div>
 
                   {/* Category */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-707 mb-1">
                       Category
                     </label>
                     <select className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                       <option>Select Category</option>
                     </select>
+                  </div> */}
+
+                  {/* Cost */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cost
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      placeholder="0.00"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
                 </div>
 
@@ -1106,22 +1120,10 @@ const AddNewAsset = () => {
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-
-                  {/* Cost */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cost
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="0.00"
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
                 </div>
 
                 {/* Description/Notes (Spanning Two Columns) */}
-                <div className="md:col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description/Notes
                   </label>
@@ -1132,23 +1134,23 @@ const AddNewAsset = () => {
                   />
                 </div>
               </div>
-              <div className="flex w-full md:w-[60%] flex-col space-y-6">
+              <div className="flex w-full md:w-[55%] flex-col space-y-6">
                 {/* Right Column */}
-                <div className="space-y-6">
+                <div className="space-y-6 w-full sm:gap-6 md:gap-0 flex md:flex-col sm:flex-row flex-col">
                   {/* Asset ID */}
-                  <div>
+                  <div className="w-full">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Asset ID
+                      Model Number
                     </label>
                     <input
                       type="text"
-                      placeholder="Auto-generated"
+                      placeholder="Enter Model Number"
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   {/* Warranty Until */}
-                  <div>
+                  <div className="w-full">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Warranty Until
                     </label>
@@ -1212,7 +1214,7 @@ const AddNewAsset = () => {
               </div>
             </div>
             {/* Buttons */}
-            <div className="flex flex-row md:gap-5 mt-4 gap-2 items-start pb-4 border-b-[2px] border-b-[#E1E1E1]">
+            <div className="flex flex-row justify-center md:gap-5 mt-4 gap-2 items-start pb-4 border-b-[2px] border-b-[#E1E1E1]">
               <Button
                 type="submit"
                 disabled={isLoading || updateIsLoading}
@@ -1240,13 +1242,13 @@ const AddNewAsset = () => {
           </div>
         </form>
       </div>
-      <div className="px-6">
+      {/* <div className="px-6">
         <h1 className="mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
           Existing Assets
         </h1>
 
         <div className="flex gap-4 items-center mt-4">
-          {/* Enhanced Search Input with Icon */}
+        
           <div className="relative flex-1 max-w-md">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Search className="w-5 h-5 text-gray-400" />
@@ -1262,7 +1264,7 @@ const AddNewAsset = () => {
             />
           </div>
 
-          {/* Enhanced Dropdown with Icon */}
+      
 
           <CustomVDropdown
             value={type}
@@ -1273,9 +1275,9 @@ const AddNewAsset = () => {
             placeholder={"All Type"}
             // style={getFieldStyles(key).input}
           />
-          {/* Custom Dropdown Arrow */}
+        
         </div>
-        {/* tabel */}
+      
         <div className="overflow-x-auto my-6 md:mt-9">
           <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
             <table className="table-auto w-full min-w-max ">
@@ -1356,7 +1358,7 @@ const AddNewAsset = () => {
                           />
                         ) : (
                           <div className="flex flex-col items-center gap-2">
-                            {/* Hidden input */}
+                           
                             <input
                               ref={(el) =>
                                 (fileInputRefs.current[item.id] = el)
@@ -1369,7 +1371,7 @@ const AddNewAsset = () => {
                               }
                             />
 
-                            {/* Button that triggers input */}
+                         
                             <div className="flex items-center justify-center h-20 px-4 bg-gray-100 rounded-md">
                               <button
                                 onClick={(e) => {
@@ -1439,7 +1441,7 @@ const AddNewAsset = () => {
             </table>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

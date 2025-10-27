@@ -130,9 +130,9 @@ const DashboardTable = () => {
             );
           })}
         </div>
-        <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
-          Asset Distribution By Department
-        </h1>
+        {/* <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+          Assets 
+        </h1> */}
         {/* tabel */}
         <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-6 md:mt-6">
           <div className="max-h-[400px]  mx-auto md:max-h-[440px] overflow-y-auto  border border-gray-200 rounded-lg">
@@ -167,7 +167,7 @@ const DashboardTable = () => {
                     AMC Vender Name
                   </th>{" "}
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Warrenty Expiry{" "}
+                    Warranty Expiry{" "}
                   </th>{" "}
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Status

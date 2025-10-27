@@ -80,11 +80,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/addAssets",
-    element: (
-      <ProtectedRoute role="super_admin">
-        <AddNewAsset />
-      </ProtectedRoute>
-    ),
+    element: <AddNewAsset />,
   },
   {
     path: "/addEmployee",
