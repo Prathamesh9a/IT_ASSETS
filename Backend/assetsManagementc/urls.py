@@ -15,6 +15,7 @@ urlpatterns = [
     path("requests/decision/", v.approve_reject_request, name="approve-reject-request"),
     path("<int:pk>/", v.asset_update, name="asset-update"),
     path("delete/", v.delete_assets, name="asset-soft-delete"),
+    path("asset-types/", v.get_asset_types, name="get-asset-types"),
 ]
 
 
