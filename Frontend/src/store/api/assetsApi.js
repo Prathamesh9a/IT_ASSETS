@@ -15,6 +15,11 @@ export const assetsApi = createApi({
       query: (id) => `/assets/${id}/`,
       providesTags: ["Assets"],
     }),
+    getAssetType: builder.query({
+      query: () => `/assets/asset-types/`,
+      providesTags: ["Assets"],
+    }),
+
     createAsset: builder.mutation({
       query: (body) => ({
         url: "/assets/",
@@ -23,6 +28,7 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
+
     updateAsset: builder.mutation({
       query: ({ id, data }) => ({
         url: `/assets/${id}/`,
@@ -70,6 +76,37 @@ export const assetsApi = createApi({
       query: () => "/assets/status-summary/",
       providesTags: ["Assets"],
     }),
+
+    createAssetByForm: builder.mutation({
+      query: (assetData) => {
+        const formData = new FormData();
+
+        Object.entries(assetData).forEach(([key, value]) => {
+          if (
+            value !== null &&
+            value !== undefined &&
+            value !== "" &&
+            key !== "images"
+          ) {
+            formData.append(key, value);
+          }
+        });
+
+        // Handle multiple image/video files
+        if (assetData.images && Array.isArray(assetData.images)) {
+          assetData.images.forEach((file) => {
+            formData.append("images", file);
+          });
+        }
+
+        return {
+          url: "/assets/create/",
+          method: "POST",
+          body: formData,
+        };
+      },
+    }),
+
     uploadAssetImage: builder.mutation({
       query: ({ id, data }) => ({
         url: `/assets/${id}/upload-images/`,
@@ -127,7 +164,9 @@ export const assetsApi = createApi({
 export const {
   useGetAssetsQuery,
   useGetAssetByIdQuery,
+  useGetAssetTypeQuery,
   useCreateAssetMutation,
+  useCreateAssetByFormMutation,
   useUpdateAssetMutation,
   useDeleteAssetMutation,
   useUploadAssetImageMutation,
