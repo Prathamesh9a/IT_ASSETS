@@ -11,8 +11,11 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import MyAssetSerializer
 from .models import Asset, AssetImage, AssetAssignment,AssetType
+from .serializers import  AssignedAssetListRowSerializer
 from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer, AssetUpdateSerializer,DeleteAssetsSerializer,AssetTypeSerializer
+from .serializers import RevokeAssetSerializer
 from employeeManagement.permissions import IsAdmin,IsUser
+from employeeManagement.models import Employee
 from django.shortcuts import get_object_or_404
 from django.shortcuts import get_list_or_404
 import logging
@@ -388,7 +391,199 @@ def assign_asset(request):
         },
         status=status.HTTP_201_CREATED,
     )
+#--------------current Assets--------
+assigned_assets_example = openapi.Response(
+    description="All active assigned assets with employee details (Admin only)",
+    examples={
+        "application/json": [
+            {
+                "id": 42,
+                "asset": {
+                    "id": 7,
+                    "asset_type_name": "Laptop",
+                    "product_name": "HP EliteBook 840 G10",
+                    "model_no": "HP-840-G10",
+                    "serial_no": "HP-840-7788",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 512GB SSD",
+                    "status": "Assigned",
+                    "vendor_name": "HP India",
+                    "images": [
+                        {
+                            "id": 123,
+                            "image": "/media/asset_images/hp_elitebook_front.jpg",
+                            "uploaded_at": "2025-10-20T10:15:00+05:30"
+                        }
+                    ]
+                },
+                "employee": {
+                    "id": 15,
+                    "first_name": "Aisha",
+                    "last_name": "Sharma",
+                    "email": "aisha.sharma@example.com"
+                },
+                "assigned_date": "2025-10-18",
+                "status": "assigned",
+                "remarks": "Issued for project onboarding"
+            },
+            
+        ]
+    }
+)
 
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="List all assets assigned to employees (Admin only)",
+    responses={200: assigned_assets_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def list_assigned_assets(request):
+    """
+    Admin view.
+
+    Return every active assignment:
+    - AssetAssignment.returned_date IS NULL
+    Means asset is still with the employee.
+
+    Includes:
+    - which asset
+    - which employee
+    - assigned_date
+    - current status (assigned, surrender_requested, etc)
+    - remarks
+    """
+    set_request_context(request)
+
+    assignments = (
+        AssetAssignment.objects
+        .select_related("asset", "asset__asset_type", "asset__vendor", "employee")
+        .prefetch_related("asset__images")
+        .filter(returned_date__isnull=True)
+        .order_by("-assigned_date")
+    )
+
+    data = AssignedAssetListRowSerializer(assignments, many=True).data
+
+    logger.info(
+        f"Admin {request.user} viewed active assigned assets list. Count={len(data)}"
+    )
+
+    return Response(data, status=status.HTTP_200_OK)
+
+#--------------------revoke assets
+revoke_success_example = openapi.Response(
+    description="Asset revoked and made available",
+    examples={
+        "application/json": {
+            "detail": "Asset revoked successfully.",
+            "asset_id": 12,
+            "asset_status": "Available",
+            "assignment_id": 44,
+            "assignment_status": "revoked",
+            "returned_date": "2025-10-27"
+        }
+    },
+)
+
+
+@swagger_auto_schema(
+    method="post",
+    operation_summary="Revoke asset from employee and mark it Available (Admin only)",
+    request_body=RevokeAssetSerializer,
+    responses={200: revoke_success_example, 400: "Bad Request", 404: "Not Found"},
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdmin])
+@transaction.atomic
+def revoke_asset(request):
+    """
+    Admin action:
+    - Close the active assignment for an employee on an asset
+    - Mark assignment.status = 'revoked'
+    - Set returned_date = today
+    - Mark the asset status back to Available
+    """
+    set_request_context(request)
+
+    serializer = RevokeAssetSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    asset_id = serializer.validated_data["asset_id"]
+    employee_id = serializer.validated_data["employee_id"]
+    note = serializer.validated_data.get("remarks", "").strip()
+
+    # 1. Get asset
+    asset = get_object_or_404(Asset, id=asset_id)
+    employee = get_object_or_404(Employee, id=employee_id)
+
+    # 2. Find active assignment for this employee and asset
+    assignment = AssetAssignment.objects.filter(
+        asset=asset,
+        employee=employee,
+        returned_date__isnull=True,
+    ).order_by("-assigned_date").first()
+
+    if not assignment:
+        return Response(
+            {"detail": "No active assignment found for this asset and employee."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # 3. Set assignment.status = 'revoked'
+    assignment.status = "revoked"
+    assignment.returned_date = timezone.now().date()
+
+    # append revoke note to remarks
+    if note:
+        if assignment.remarks:
+            assignment.remarks = f"{assignment.remarks}\nRevoked: {note}"
+        else:
+            assignment.remarks = f"Revoked: {note}"
+
+    assignment.save(update_fields=["status", "returned_date", "remarks"])
+
+    # 4. Set asset.status = Available
+    try:
+        asset.status = Asset.Status.AVAILABLE
+    except Exception:
+        asset.status = "Available"
+
+    asset.save(update_fields=["status", "updated_at"] if hasattr(asset, "updated_at") else ["status"])
+
+    # 5. Log it in AssetLog for audit
+    try:
+        desc = f"Asset revoked from employee {employee.username}"
+        if note:
+            desc = f"{desc}. Note: {note}"
+
+        AssetLog.objects.create(
+            asset=asset,
+            employee=str(employee),
+            action="Revoked",
+            description=desc,
+            timestamp=timezone.now(),
+        )
+    except Exception:
+        logger.warning("Failed to create AssetLog for revoke_asset", exc_info=True)
+
+    logger.info(
+        f"Asset {asset.id} revoked from employee {employee.username} by admin {request.user}"
+    )
+
+    return Response(
+        {
+            "detail": "Asset revoked successfully.",
+            "asset_id": asset.id,
+            "asset_status": str(asset.status),
+            "assignment_id": assignment.id,
+            "assignment_status": assignment.status,
+            "returned_date": assignment.returned_date.isoformat(),
+        },
+        status=status.HTTP_200_OK,
+    )
 #----------------My Assets------------
 @swagger_auto_schema(
     method="get",
