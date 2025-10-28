@@ -78,7 +78,6 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
-    // for admin approve reject transfer request // approve asset request // reject asset request
     assetApproveRejectForTransferByAdmin: builder.mutation({
       query: (data) => ({
         url: `/assets/appr-rej-transfer/`,
@@ -103,7 +102,6 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
-    // ✅ New Import Assets Mutation
     importAssets: builder.mutation({
       query: (data) => ({
         url: `/assets/import/`,
@@ -113,12 +111,10 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
-    // ✅ New Get Pending Assets
     getPendingAssets: builder.query({
       query: () => "/assets/pending/",
       providesTags: ["Assets"],
     }),
-    // ✅ New Decide Asset Request
     decideAssetRequest: builder.mutation({
       query: (data) => ({
         url: `/assets/requests/decision/`,
@@ -126,6 +122,12 @@ export const assetsApi = createApi({
         body: data,
       }),
       invalidatesTags: ["Assets"],
+    }),
+
+    // NEW: Get Pending Requests for Current User
+    getPendingRequests: builder.query({
+      query: () => "/assets/assets/requests/pending/user/",
+      providesTags: ["Assets"],
     }),
   }),
 });
@@ -147,5 +149,6 @@ export const {
   useRejectAssetRequestByAdminMutation,
   useImportAssetsMutation,
   useGetPendingAssetsQuery,
-  useDecideAssetRequestMutation, // ✅ Export new hook
+  useDecideAssetRequestMutation,
+  useGetPendingRequestsQuery, // Export new hook
 } = assetsApi;
