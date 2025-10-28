@@ -15,6 +15,7 @@ import {
   useGetAssetsQuery,
   useGetPendingAssetsQuery,
   useRejectAssetRequestByAdminMutation,
+  useDecideAssetRequestMutation,
 } from "@/store/api/assetsApi";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +23,8 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import SuperAdminDashboard from "../superAdmin/SuperAdminDashboard";
 import DashboardTable from "./DashboardTable";
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const cardName = [
   "Pending Request",
@@ -52,6 +54,7 @@ const AdminDashboard = () => {
     useAssetApproveRejectForTransferByAdminMutation();
   const [approveAssetRequestByAdmin] = useApproveAssetRequestByAdminMutation();
   const [rejectAssetRequestByAdmin] = useRejectAssetRequestByAdminMutation();
+  const [decideAssetRequest] = useDecideAssetRequestMutation();
   const { data: pendingAssets, isLoading: pendingAssetsIsLoading } =
     useGetPendingAssetsQuery();
   console.log(pendingAssets);
@@ -71,27 +74,6 @@ const AdminDashboard = () => {
   const loadings = [false, getAssetIsLoading, getAssetIsLoading, false];
 
   const [activeTab, setActiveTab] = useState(tabs[0]); // default: Overview
-  // tabchange function
-  //     const handleTabChange = (tab) => {
-  //     setActiveTab(tab) // Update selected tab
-  //   }
-
-  //   const renderTabContent = () => {
-  //     switch (activeTab) {
-  //       case "Overview":
-  //         return <Overview />
-  //       case "Asset Management":
-  //         return <AssetManagement />
-  //       case "System Audit":
-  //         return <SystemAudit />
-  //       case "Reports":
-  //         return <Reports />
-  //       case "Setting":
-  //         return <Setting />
-  //       default:
-  //         return null
-  //     }
-  //   }
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     // Call API depending on the tab
@@ -120,31 +102,15 @@ const AdminDashboard = () => {
     }
   };
   // Final API call
-
   const handleSubmit = async (item = selectedItem, action = selectedAction) => {
     try {
       let response;
-      if (item.status === "transfer_requested") {
-        // Transfer case: single endpoint
-        response = await assetApproveRejectForTransferByAdmin({
-          assignment_id: item.id,
-          action,
-          ...(action === "reject" ? { reason: rejectReason } : {}),
-        }).unwrap();
-      } else {
-        if (action === "approve") {
-          response = await approveAssetRequestByAdmin({
-            assignment_id: item.id,
-            action: "approve",
-          }).unwrap();
-        } else {
-          response = await rejectAssetRequestByAdmin({
-            assignment_id: item.id,
-            action: "reject",
-            reason: rejectReason,
-          }).unwrap();
-        }
-      }
+      // Use the new decision endpoint for both approve and reject
+      response = await decideAssetRequest({
+        assignment_id: item.id,
+        action,
+        ...(action === "reject" ? { reason: rejectReason } : {}),
+      }).unwrap();
 
       // Reset
       setIsRoleOverlay(false);
@@ -154,19 +120,15 @@ const AdminDashboard = () => {
 
       // ✅ Success toast
       toast.success(
-        response?.message ||
-          response?.detail ||
-          `Request ${action}d successfully.`
+        response?.detail || `Request ${action}d successfully.`
       );
     } catch (error) {
       console.error(error);
-
       // ❌ Error toast
-      toast.error("Something went wrong. Please try again.");
+      toast.error(error?.data?.detail || "Something went wrong. Please try again.");
     }
   };
 
-  //   console.log(activeTab);
   return (
     <>
       <Header
@@ -237,64 +199,62 @@ const AdminDashboard = () => {
               Recent Requests
             </h1>
 
-            <div className="overflow-x-auto my-6 md:mt-9">
-              <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
-                <table className="table-auto w-full min-w-max">
-                  <thead className="bg-[#000C63] text-white  font-medium">
+            <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1] my-6 md:mt-6">
+              <div className="max-h-[400px] mx-auto md:max-h-[440px] overflow-y-auto border border-gray-200 rounded-lg">
+                <table className="w-full min-w-max overflow-x-auto">
+                  <thead className="bg-[#000C63] text-white font-medium">
                     <tr>
-                      <th className="sticky top-0 z-30 rounded-tl-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                         Asset Image
                       </th>
-                      <th className="sticky top-0 z-30  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                         Request ID
                       </th>
-
-                      <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base md:text-lg font-medium">
                         User
                       </th>
-                      <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                        Asset
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base md:text-lg font-medium">
+                        Asset Name
                       </th>
-                      <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                         Request Type
                       </th>
-                      <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                         Status
                       </th>
-                      <th className="sticky top-0 z-30 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                        Date{" "}
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base md:text-lg font-medium">
+                        Date
                       </th>
-                      <th className="sticky top-0 z-30 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                         Action
                       </th>
                     </tr>
                   </thead>
-
                   <tbody>
                     {pendingAssetsIsLoading ? (
                       // 🔹 Show skeleton loaders while fetching
                       [...Array(5)].map((_, index) => (
-                        <tr key={index} className="border-b border-gray-200">
-                          <td className="p-3 text-center">
+                        <tr key={index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-gray-100' : ''}`}>
+                          <td className="p-3 text-center border-r-[1px] border-r-[#EAECF0]">
                             <Skeleton className="h-20 w-20 mx-auto rounded-md" />
                           </td>
-                          <td className="p-3 text-center">
+                          <td className="p-3 text-center border-r-[1px] border-r-[#EAECF0]">
                             <Skeleton className="h-6 w-16 mx-auto" />
                           </td>
-                          <td className="p-3 text-center">
-                            <Skeleton className="h-6 w-24 mx-auto" />
+                          <td className="p-3 text-start border-r-[1px] border-r-[#EAECF0]">
+                            <Skeleton className="h-6 w-24" />
                           </td>
-                          <td className="p-3 text-center">
+                          <td className="p-3 text-start border-r-[1px] border-r-[#EAECF0]">
+                            <Skeleton className="h-6 w-20" />
+                          </td>
+                          <td className="p-3 text-center border-r-[1px] border-r-[#EAECF0]">
                             <Skeleton className="h-6 w-20 mx-auto" />
                           </td>
-                          <td className="p-3 text-center">
-                            <Skeleton className="h-6 w-20 mx-auto" />
-                          </td>
-                          <td className="p-3 text-center">
+                          <td className="p-3 text-center border-r-[1px] border-r-[#EAECF0]">
                             <Skeleton className="h-6 w-28 mx-auto" />
                           </td>
-                          <td className="p-3 text-center">
-                            <Skeleton className="h-6 w-24 mx-auto" />
+                          <td className="p-3 text-start border-r-[1px] border-r-[#EAECF0]">
+                            <Skeleton className="h-6 w-24" />
                           </td>
                           <td className="p-3 text-center">
                             <div className="flex justify-center gap-2">
@@ -307,55 +267,47 @@ const AdminDashboard = () => {
                     ) : pendingAssets && pendingAssets?.length > 0 ? (
                       // 🔹 Render actual data
                       pendingAssets.map((item, index) => (
-                        <tr key={item.id} className="border-b border-gray-200">
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            {item.asset?.images?.length > 0 &&
-                            item.asset.images[0].image ? (
+                        <tr key={item.id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-gray-100' : ''}`}>
+                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                            {item.asset?.images?.length > 0 && item.asset.images[0].image ? (
                               <img
-                                src={`${import.meta.env.VITE_API_BASE_URL.replace(
-                                  /\/$/,
-                                  ""
-                                )}${item.asset.images[0].image}`}
-                                alt={item.asset.name || "Asset image"}
-                                className="h-20 mx-auto"
+                                src={`${VITE_BASE_URL ? VITE_BASE_URL.replace("/api/v1/", "") : "http://127.0.0.1:8000"}${item.asset.images[0].image}`}
+                                alt={item.asset.product_name || "Asset image"}
+                                className="h-20 w-20 object-cover mx-auto rounded-md"
                               />
                             ) : (
-                              <span>{item.asset?.name || "No Image"}</span>
+                              <span className="text-gray-500">{item.asset?.product_name || "No Image"}</span>
                             )}
                           </td>
-
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            {item?.id}
+                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                            {item.id || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            {item.assigned_to?.user?.first_name || ""}{" "}
-                            {item.assigned_to?.user?.last_name || ""}
+                          <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                            {(item.employee?.first_name || "") + " " + (item.employee?.last_name || "") || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            {item?.asset?.name}
+                          <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                            {item.asset?.product_name || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            <div className="flex justify-center">
-                              {item?.status}
-                            </div>
+                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                            {item.status || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             Pending
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            {new Date(item?.approved_at).toLocaleDateString()}
+                          <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                            {item.assigned_date ? new Date(item.assigned_date).toLocaleDateString() : "-"}
                           </td>
                           <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex justify-center gap-2">
                               <button
                                 onClick={() => handelClick(item, "approve")}
-                                className="px-6 py-2  hover:bg-[#6938E4]  bg-[#000C63] text-white rounded-full text-base cursor-pointer roboto font-semibold transition"
+                                className="px-6 py-2 bg-[#000C63] hover:bg-[#6938E4] text-white rounded-full text-base roboto font-semibold transition duration-200 min-w-[90px]"
                               >
                                 Approve
                               </button>
                               <button
                                 onClick={() => handelClick(item, "reject")}
-                                className="px-6 py-2 text-red-400 hover:bg-red-200  bg-red-100 rounded-full text-base cursor-pointer roboto font-semibold transition"
+                                className="px-6 py-2 bg-red-100 text-red-400 hover:bg-red-200 rounded-full text-base roboto font-semibold transition duration-200 min-w-[90px]"
                               >
                                 Reject
                               </button>
@@ -365,12 +317,12 @@ const AdminDashboard = () => {
                       ))
                     ) : (
                       // 🔹 No data state
-                      <tr>
+                      <tr className="border-b border-gray-200">
                         <td
                           colSpan="8"
-                          className="text-center p-6 text-gray-500 roboto"
+                          className="text-center p-6 text-gray-500 roboto text-base"
                         >
-                          No assets found.
+                          No pending requests found.
                         </td>
                       </tr>
                     )}

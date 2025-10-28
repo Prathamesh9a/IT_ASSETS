@@ -1,4 +1,3 @@
-// src/services/assetsApi.js
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./baseQueryWithReauth";
 
@@ -104,7 +103,6 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
-
     // ✅ New Import Assets Mutation
     importAssets: builder.mutation({
       query: (data) => ({
@@ -115,11 +113,19 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
-
     // ✅ New Get Pending Assets
     getPendingAssets: builder.query({
       query: () => "/assets/pending/",
       providesTags: ["Assets"],
+    }),
+    // ✅ New Decide Asset Request
+    decideAssetRequest: builder.mutation({
+      query: (data) => ({
+        url: `/assets/requests/decision/`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Assets"],
     }),
   }),
 });
@@ -140,5 +146,6 @@ export const {
   useApproveAssetRequestByAdminMutation,
   useRejectAssetRequestByAdminMutation,
   useImportAssetsMutation,
-  useGetPendingAssetsQuery, // ✅ Export hook
+  useGetPendingAssetsQuery,
+  useDecideAssetRequestMutation, // ✅ Export new hook
 } = assetsApi;
