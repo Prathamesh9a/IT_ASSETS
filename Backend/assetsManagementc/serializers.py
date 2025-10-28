@@ -458,3 +458,9 @@ class AssetLogSerializer(serializers.ModelSerializer):
             "description",
             "timestamp",
         ]        
+
+class DashboardSummarySerializer(serializers.Serializer):
+    pending_requests = serializers.IntegerField(read_only=True, help_text="Number of asset requests waiting for admin action")
+    total_assets = serializers.IntegerField(read_only=True, help_text="Total assets in the system")
+    assigned_assets = serializers.IntegerField(read_only=True, help_text="Assets currently marked as Assigned")
+    under_repair = serializers.IntegerField(read_only=True, help_text="Assets currently marked as In Repair")        
