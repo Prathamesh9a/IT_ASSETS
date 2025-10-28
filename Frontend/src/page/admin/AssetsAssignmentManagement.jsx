@@ -104,7 +104,8 @@ const AssetsAssignmentManagement = () => {
     assetData?.filter(
       (asset) =>
         asset.asset_type_name?.toLowerCase() ===
-        selectedAssetType?.toLowerCase()
+          selectedAssetType?.toLowerCase() &&
+        asset.status?.toLowerCase() == "available"
     ) || [];
 
   console.log("assetname : ", assetData);
