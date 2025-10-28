@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from employeeManagement.models import Employee
-from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment
+from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment,AssetLog
 from django.utils import timezone
 from django.db import transaction
 from .models import AssetType
@@ -221,6 +221,65 @@ class AssignAssetSerializer(serializers.Serializer):
         data["_employee"] = employee
         data["_assigned_date"] = timezone.now().date()
         return data  
+class AssignedEmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+        ]
+class AssignedAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    images =AssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]        
+class AssignedAssetListRowSerializer(serializers.ModelSerializer):
+    asset = AssignedAssetSerializer(read_only=True)
+    employee = AssignedEmployeeSerializer(read_only=True)
+
+    class Meta:
+        model = AssetAssignment
+        fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]
+
+class RevokeAssetSerializer(serializers.Serializer):
+    asset_id = serializers.IntegerField(help_text="Asset ID to revoke")
+    employee_id = serializers.IntegerField(help_text="Employee ID who currently holds this asset")
+    remarks = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Optional note for why this asset was revoked"
+    )
 
 class RequestAssignmentSerializer(serializers.Serializer):
     asset_id = serializers.IntegerField(help_text="Asset ID")
@@ -237,9 +296,29 @@ class RequestAssignmentSerializer(serializers.Serializer):
         help_text="Why you are raising this request"
     )
 class AssetAssignmentSerializer(serializers.ModelSerializer):
+    asset = AssignedAssetSerializer(read_only=True)
+    employee = AssignedEmployeeSerializer(read_only=True)
+
     class Meta:
         model = AssetAssignment
-        fields = "__all__"
+        fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "returned_date",
+            "status",
+            "remarks",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "employee",
+            "assigned_date",
+            "returned_date",
+            "status",
+            "remarks",
+        ]
         # keep these read-only if your model has them
        # read_only_fields = ["assigned_by", "requested_at", "approved_at", "status"]    
 
@@ -259,3 +338,129 @@ class ApproveRejectSerializer(serializers.Serializer):
         if data.get("action") == "reject" and not data.get("reason"):
             raise serializers.ValidationError({"reason": "Reason is required when rejecting"})
         return data       
+
+
+class AssignedEmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+        ]
+
+class MyPendingAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    images = AssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]
+
+
+class MyPendingRequestSerializer(serializers.ModelSerializer):
+    asset = MyPendingAssetSerializer(read_only=True)
+    employee = AssignedEmployeeSerializer(read_only=True)
+    class Meta:
+        model = AssetAssignment
+        fields = [
+            "id",
+            "employee",
+            "asset",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]    
+
+
+class LogAssetImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetImage
+        fields = [
+            "id",
+            "image",
+            "uploaded_at",
+        ]
+        read_only_fields = ["id", "uploaded_at"]
+
+
+class LogAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    images = LogAssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]
+        read_only_fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]
+
+
+class AssetLogSerializer(serializers.ModelSerializer):
+    asset = LogAssetSerializer(read_only=True)
+
+    class Meta:
+        model = AssetLog
+        fields = [
+            "id",
+            "asset",
+            "employee",
+            "action",
+            "description",
+            "timestamp",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "employee",
+            "action",
+            "description",
+            "timestamp",
+        ]        
+
+class DashboardSummarySerializer(serializers.Serializer):
+    pending_requests = serializers.IntegerField(read_only=True, help_text="Number of asset requests waiting for admin action")
+    total_assets = serializers.IntegerField(read_only=True, help_text="Total assets in the system")
+    assigned_assets = serializers.IntegerField(read_only=True, help_text="Assets currently marked as Assigned")
+    under_repair = serializers.IntegerField(read_only=True, help_text="Assets currently marked as In Repair")        

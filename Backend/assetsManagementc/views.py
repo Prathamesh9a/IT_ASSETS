@@ -5,16 +5,21 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from .models import Asset, AssetAssignment, AssetLog
-from .serializers import AssignAssetSerializer
+from .serializers import AssignAssetSerializer,MyPendingRequestSerializer
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import MyAssetSerializer
+from django.db.models import Q
+from .serializers import MyAssetSerializer,DashboardSummarySerializer
 from .models import Asset, AssetImage, AssetAssignment,AssetType
+from .serializers import  AssignedAssetListRowSerializer,AssetLogSerializer
 from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer, AssetUpdateSerializer,DeleteAssetsSerializer,AssetTypeSerializer
+from .serializers import RevokeAssetSerializer
 from employeeManagement.permissions import IsAdmin,IsUser
+from employeeManagement.models import Employee
 from django.shortcuts import get_object_or_404
 from django.shortcuts import get_list_or_404
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -388,7 +393,199 @@ def assign_asset(request):
         },
         status=status.HTTP_201_CREATED,
     )
+#--------------current Assets--------
+assigned_assets_example = openapi.Response(
+    description="All active assigned assets with employee details (Admin only)",
+    examples={
+        "application/json": [
+            {
+                "id": 42,
+                "asset": {
+                    "id": 7,
+                    "asset_type_name": "Laptop",
+                    "product_name": "HP EliteBook 840 G10",
+                    "model_no": "HP-840-G10",
+                    "serial_no": "HP-840-7788",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 512GB SSD",
+                    "status": "Assigned",
+                    "vendor_name": "HP India",
+                    "images": [
+                        {
+                            "id": 123,
+                            "image": "/media/asset_images/hp_elitebook_front.jpg",
+                            "uploaded_at": "2025-10-20T10:15:00+05:30"
+                        }
+                    ]
+                },
+                "employee": {
+                    "id": 15,
+                    "first_name": "Aisha",
+                    "last_name": "Sharma",
+                    "email": "aisha.sharma@example.com"
+                },
+                "assigned_date": "2025-10-18",
+                "status": "assigned",
+                "remarks": "Issued for project onboarding"
+            },
+            
+        ]
+    }
+)
 
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="List all assets assigned to employees (Admin only)",
+    responses={200: assigned_assets_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def list_assigned_assets(request):
+    """
+    Admin view.
+
+    Return every active assignment:
+    - AssetAssignment.returned_date IS NULL
+    Means asset is still with the employee.
+
+    Includes:
+    - which asset
+    - which employee
+    - assigned_date
+    - current status (assigned, surrender_requested, etc)
+    - remarks
+    """
+    set_request_context(request)
+
+    assignments = (
+        AssetAssignment.objects
+        .select_related("asset", "asset__asset_type", "asset__vendor", "employee")
+        .prefetch_related("asset__images")
+        .filter(returned_date__isnull=True)
+        .order_by("-assigned_date")
+    )
+
+    data = AssignedAssetListRowSerializer(assignments, many=True).data
+
+    logger.info(
+        f"Admin {request.user} viewed active assigned assets list. Count={len(data)}"
+    )
+
+    return Response(data, status=status.HTTP_200_OK)
+
+#--------------------revoke assets------------------
+revoke_success_example = openapi.Response(
+    description="Asset revoked and made available",
+    examples={
+        "application/json": {
+            "detail": "Asset revoked successfully.",
+            "asset_id": 12,
+            "asset_status": "Available",
+            "assignment_id": 44,
+            "assignment_status": "revoked",
+            "returned_date": "2025-10-27"
+        }
+    },
+)
+
+
+@swagger_auto_schema(
+    method="post",
+    operation_summary="Revoke asset from employee and mark it Available (Admin only)",
+    request_body=RevokeAssetSerializer,
+    responses={200: revoke_success_example, 400: "Bad Request", 404: "Not Found"},
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdmin])
+@transaction.atomic
+def revoke_asset(request):
+    """
+    Admin action:
+    - Close the active assignment for an employee on an asset
+    - Mark assignment.status = 'revoked'
+    - Set returned_date = today
+    - Mark the asset status back to Available
+    """
+    set_request_context(request)
+
+    serializer = RevokeAssetSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    asset_id = serializer.validated_data["asset_id"]
+    employee_id = serializer.validated_data["employee_id"]
+    note = serializer.validated_data.get("remarks", "").strip()
+
+    # 1. Get asset
+    asset = get_object_or_404(Asset, id=asset_id)
+    employee = get_object_or_404(Employee, id=employee_id)
+
+    # 2. Find active assignment for this employee and asset
+    assignment = AssetAssignment.objects.filter(
+        asset=asset,
+        employee=employee,
+        returned_date__isnull=True,
+    ).order_by("-assigned_date").first()
+
+    if not assignment:
+        return Response(
+            {"detail": "No active assignment found for this asset and employee."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # 3. Set assignment.status = 'revoked'
+    assignment.status = "revoked"
+    assignment.returned_date = timezone.now().date()
+
+    # append revoke note to remarks
+    if note:
+        if assignment.remarks:
+            assignment.remarks = f"{assignment.remarks}\nRevoked: {note}"
+        else:
+            assignment.remarks = f"Revoked: {note}"
+
+    assignment.save(update_fields=["status", "returned_date", "remarks"])
+
+    # 4. Set asset.status = Available
+    try:
+        asset.status = Asset.Status.AVAILABLE
+    except Exception:
+        asset.status = "Available"
+
+    asset.save(update_fields=["status", "updated_at"] if hasattr(asset, "updated_at") else ["status"])
+
+    # 5. Log it in AssetLog for audit
+    try:
+        desc = f"Asset revoked from employee {employee.username}"
+        if note:
+            desc = f"{desc}. Note: {note}"
+
+        AssetLog.objects.create(
+            asset=asset,
+            employee=str(employee),
+            action="Revoked",
+            description=desc,
+            timestamp=timezone.now(),
+        )
+    except Exception:
+        logger.warning("Failed to create AssetLog for revoke_asset", exc_info=True)
+
+    logger.info(
+        f"Asset {asset.id} revoked from employee {employee.username} by admin {request.user}"
+    )
+
+    return Response(
+        {
+            "detail": "Asset revoked successfully.",
+            "asset_id": asset.id,
+            "asset_status": str(asset.status),
+            "assignment_id": assignment.id,
+            "assignment_status": assignment.status,
+            "returned_date": assignment.returned_date.isoformat(),
+        },
+        status=status.HTTP_200_OK,
+    )
 #----------------My Assets------------
 @swagger_auto_schema(
     method="get",
@@ -550,7 +747,79 @@ def pending_requests(request):
     serializer = AssetAssignmentSerializer(pending, many=True)
     logger.info(f"Pending requests retrieved by admin {request.user}")
     return Response(serializer.data, status=status.HTTP_200_OK)
+#------------------Pending request for user---
+user_pending_example = openapi.Response(
+    description="Pending requests for the logged-in user",
+    examples={
+        "application/json": [
+            {
+                "id": 51,
+                "employee": {
+                    "id": 22,
+                    "first_name": "Ravi",
+                    "last_name": "Narayan",
+                    "email": "ravi.narayan@example.com"
+                },
+                "asset": {
+                    "id": 9,
+                    "asset_type_name": "Desktop",
+                    "product_name": "Dell OptiPlex 7010",
+                    "model_no": "DOP-7010-2025",
+                    "serial_no": "DOP1004",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 1TB HDD, 512GB SSD",
+                    "status": "surrender_requested",
+                    "vendor_name": "Dell India",
+                    "images": []
+                },
+                "assigned_date": "2025-10-10",
+                "status": "surrender_requested",
+                "remarks": "Leaving team"
+            }
+        ]
+    }
+)
 
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get all your pending asset requests",
+    responses={200: user_pending_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsUser])
+def user_pending_requests(request):
+    """
+    User view.
+
+    Return all AssetAssignment rows where:
+    - employee == request.user
+    - status ends with '_requested' (example: surrender_requested)
+    - returned_date is null (asset still with user)
+
+    Includes asset info, request status, remarks, assigned_date.
+    """
+    set_request_context(request)
+
+    # request.user IS the Employee model in your project
+    employee_obj = request.user
+
+    pending_qs = (
+        AssetAssignment.objects
+        .filter(
+            employee=employee_obj,
+            status__iendswith="requested",
+            returned_date__isnull=True,
+        )
+        .select_related("asset", "asset__asset_type", "asset__vendor", "employee")
+        .prefetch_related("asset__images")
+        .order_by("-assigned_date")
+    )
+
+    data = MyPendingRequestSerializer(pending_qs, many=True).data
+    logger.info(f"Pending requests retrieved for user {request.user}; count={len(data)}")
+
+    return Response(data, status=status.HTTP_200_OK)
 #----------approve reject request(admin)-------
 decision_success = openapi.Response(
     description="Decision applied",
@@ -666,3 +935,161 @@ def approve_reject_request(request):
         },
         status=status.HTTP_200_OK,
     )
+
+asset_log_list_example = openapi.Response(
+    description="List of asset log entries with asset details and images",
+    examples={
+        "application/json": [
+            {
+                "id": 101,
+                "asset": {
+                    "id": 7,
+                    "asset_type_name": "Laptop",
+                    "product_name": "HP EliteBook 840 G10",
+                    "model_no": "HP-840-G10",
+                    "serial_no": "HP-840-7788",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 512GB SSD",
+                    "status": "Assigned",
+                    "vendor_name": "HP India",
+                    "images": [
+                        {
+                            "id": 301,
+                            "image": "/media/asset_images/hp_elitebook_front.jpg",
+                            "uploaded_at": "2025-10-20T10:15:00+05:30"
+                        },
+                        {
+                            "id": 302,
+                            "image": "/media/asset_images/hp_elitebook_label.jpg",
+                            "uploaded_at": "2025-10-20T10:16:11+05:30"
+                        }
+                    ]
+                },
+                "employee": "aisha.sharma",
+                "action": "Request",
+                "description": "Request: surrender_requested | Reason: Leaving team",
+                "timestamp": "2025-10-22T15:45:00+05:30"
+            },
+            {
+                "id": 102,
+                "asset": {
+                    "id": 7,
+                    "asset_type_name": "Laptop",
+                    "product_name": "HP EliteBook 840 G10",
+                    "model_no": "HP-840-G10",
+                    "serial_no": "HP-840-7788",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 512GB SSD",
+                    "status": "Available",
+                    "vendor_name": "HP India",
+                    "images": [
+                        {
+                            "id": 301,
+                            "image": "/media/asset_images/hp_elitebook_front.jpg",
+                            "uploaded_at": "2025-10-20T10:15:00+05:30"
+                        }
+                    ]
+                },
+                "employee": "admin",
+                "action": "Revoked",
+                "description": "Asset revoked from employee 22. Note: Work finished",
+                "timestamp": "2025-10-23T11:10:45+05:30"
+            }
+        ]
+    }
+)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get full asset activity log with asset info and images",
+    responses={200: asset_log_list_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def list_asset_log(request):
+    """
+    Admin view.
+
+    Returns the full audit trail from AssetLog.
+    Includes:
+    - which asset the log is about
+    - asset details (type, serial, vendor)
+    - asset images
+    - which employee triggered the action (string field)
+    - what action happened
+    - when it happened
+    Latest first.
+    """
+    set_request_context(request)
+
+    logs = (
+        AssetLog.objects
+        .select_related("asset", "asset__asset_type", "asset__vendor")
+        .prefetch_related("asset__images")
+        .order_by("-timestamp")
+    )
+
+    data = AssetLogSerializer(logs, many=True).data
+    logger.info(f"Asset log fetched by {request.user}. Count={len(data)}")
+
+    return Response(data, status=status.HTTP_200_OK)
+
+dashboard_example_response = openapi.Response(
+    description="Dashboard summary numbers for admin",
+    examples={
+        "application/json": {
+            "pending_requests": 4,
+            "total_assets": 57,
+            "assigned_assets": 23,
+            "under_repair": 3
+        }
+    }
+)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get summary metrics for dashboard (Admin only)",
+    responses={200: dashboard_example_response, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def dashboard_summary(request):
+    """
+    Admin dashboard metrics:
+    - pending_requests: AssetAssignment rows where status ends with '_requested'
+    - total_assets: all Asset rows
+    - assigned_assets: Asset rows with status = 'Assigned'
+    - under_repair: Asset rows with status = 'In Repair'
+    """
+    set_request_context(request)
+
+    # count pending requests
+    pending_count = AssetAssignment.objects.filter(
+        Q(status__iendswith="requested")
+    ).count()
+
+    # total assets
+    total_assets_count = Asset.objects.count()
+
+    # assets marked assigned
+    assigned_assets_count = Asset.objects.filter(
+        status=Asset.Status.ASSIGNED
+    ).count()
+
+    # assets marked in repair
+    under_repair_count = Asset.objects.filter(
+        status=Asset.Status.IN_REPAIR
+    ).count()
+
+    data = {
+        "pending_requests": pending_count,
+        "total_assets": total_assets_count,
+        "assigned_assets": assigned_assets_count,
+        "under_repair": under_repair_count,
+    }
+
+    logger.info(f"Dashboard summary viewed by admin {request.user}: {data}")
+
+    return Response(data, status=status.HTTP_200_OK)

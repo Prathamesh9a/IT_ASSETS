@@ -32,6 +32,7 @@ logger = logging.getLogger('custom')  # Use your 'custom' logger
 def user_list(request):
     qs = Employee.objects.all().order_by("employee_id")
     data = UserSerializer(qs, many=True).data
+    print(data)
     logger.info("Users listed by %s", getattr(request.user, "email_id", "unknown"))
     return Response(data, status=status.HTTP_200_OK)
 

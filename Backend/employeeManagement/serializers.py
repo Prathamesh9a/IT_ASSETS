@@ -17,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             'department',
             'date_joined',
             'employee_id',
+            "id",
             'role',
             'id',
         ]

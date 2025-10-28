@@ -16,7 +16,14 @@ urlpatterns = [
     path("<int:pk>/", v.asset_update, name="asset-update"),
     path("delete/", v.delete_assets, name="asset-soft-delete"),
     path("asset-types/", v.get_asset_types, name="get-asset-types"),
+    path("assigned/list/", v.list_assigned_assets, name="list-assigned-assets"),
+    path("revoke/", v.revoke_asset, name="revoke-asset"),
+    path("assets/requests/pending/user/", v.user_pending_requests, name="user-pending-requests"),
+    path("assets/logs/", v.list_asset_log, name="list-asset-log"),
+    path("dashboard/summary/", v.dashboard_summary, name="dashboard-summary"),
+
 ]
+
 
 
 if settings.DEBUG:
