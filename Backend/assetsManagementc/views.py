@@ -9,15 +9,17 @@ from .serializers import AssignAssetSerializer,MyPendingRequestSerializer
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import MyAssetSerializer
+from django.db.models import Q
+from .serializers import MyAssetSerializer,DashboardSummarySerializer
 from .models import Asset, AssetImage, AssetAssignment,AssetType
-from .serializers import  AssignedAssetListRowSerializer
+from .serializers import  AssignedAssetListRowSerializer,AssetLogSerializer
 from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer, AssetUpdateSerializer,DeleteAssetsSerializer,AssetTypeSerializer
 from .serializers import RevokeAssetSerializer
 from employeeManagement.permissions import IsAdmin,IsUser
 from employeeManagement.models import Employee
 from django.shortcuts import get_object_or_404
 from django.shortcuts import get_list_or_404
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -933,3 +935,161 @@ def approve_reject_request(request):
         },
         status=status.HTTP_200_OK,
     )
+
+asset_log_list_example = openapi.Response(
+    description="List of asset log entries with asset details and images",
+    examples={
+        "application/json": [
+            {
+                "id": 101,
+                "asset": {
+                    "id": 7,
+                    "asset_type_name": "Laptop",
+                    "product_name": "HP EliteBook 840 G10",
+                    "model_no": "HP-840-G10",
+                    "serial_no": "HP-840-7788",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 512GB SSD",
+                    "status": "Assigned",
+                    "vendor_name": "HP India",
+                    "images": [
+                        {
+                            "id": 301,
+                            "image": "/media/asset_images/hp_elitebook_front.jpg",
+                            "uploaded_at": "2025-10-20T10:15:00+05:30"
+                        },
+                        {
+                            "id": 302,
+                            "image": "/media/asset_images/hp_elitebook_label.jpg",
+                            "uploaded_at": "2025-10-20T10:16:11+05:30"
+                        }
+                    ]
+                },
+                "employee": "aisha.sharma",
+                "action": "Request",
+                "description": "Request: surrender_requested | Reason: Leaving team",
+                "timestamp": "2025-10-22T15:45:00+05:30"
+            },
+            {
+                "id": 102,
+                "asset": {
+                    "id": 7,
+                    "asset_type_name": "Laptop",
+                    "product_name": "HP EliteBook 840 G10",
+                    "model_no": "HP-840-G10",
+                    "serial_no": "HP-840-7788",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 512GB SSD",
+                    "status": "Available",
+                    "vendor_name": "HP India",
+                    "images": [
+                        {
+                            "id": 301,
+                            "image": "/media/asset_images/hp_elitebook_front.jpg",
+                            "uploaded_at": "2025-10-20T10:15:00+05:30"
+                        }
+                    ]
+                },
+                "employee": "admin",
+                "action": "Revoked",
+                "description": "Asset revoked from employee 22. Note: Work finished",
+                "timestamp": "2025-10-23T11:10:45+05:30"
+            }
+        ]
+    }
+)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get full asset activity log with asset info and images",
+    responses={200: asset_log_list_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def list_asset_log(request):
+    """
+    Admin view.
+
+    Returns the full audit trail from AssetLog.
+    Includes:
+    - which asset the log is about
+    - asset details (type, serial, vendor)
+    - asset images
+    - which employee triggered the action (string field)
+    - what action happened
+    - when it happened
+    Latest first.
+    """
+    set_request_context(request)
+
+    logs = (
+        AssetLog.objects
+        .select_related("asset", "asset__asset_type", "asset__vendor")
+        .prefetch_related("asset__images")
+        .order_by("-timestamp")
+    )
+
+    data = AssetLogSerializer(logs, many=True).data
+    logger.info(f"Asset log fetched by {request.user}. Count={len(data)}")
+
+    return Response(data, status=status.HTTP_200_OK)
+
+dashboard_example_response = openapi.Response(
+    description="Dashboard summary numbers for admin",
+    examples={
+        "application/json": {
+            "pending_requests": 4,
+            "total_assets": 57,
+            "assigned_assets": 23,
+            "under_repair": 3
+        }
+    }
+)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get summary metrics for dashboard (Admin only)",
+    responses={200: dashboard_example_response, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def dashboard_summary(request):
+    """
+    Admin dashboard metrics:
+    - pending_requests: AssetAssignment rows where status ends with '_requested'
+    - total_assets: all Asset rows
+    - assigned_assets: Asset rows with status = 'Assigned'
+    - under_repair: Asset rows with status = 'In Repair'
+    """
+    set_request_context(request)
+
+    # count pending requests
+    pending_count = AssetAssignment.objects.filter(
+        Q(status__iendswith="requested")
+    ).count()
+
+    # total assets
+    total_assets_count = Asset.objects.count()
+
+    # assets marked assigned
+    assigned_assets_count = Asset.objects.filter(
+        status=Asset.Status.ASSIGNED
+    ).count()
+
+    # assets marked in repair
+    under_repair_count = Asset.objects.filter(
+        status=Asset.Status.IN_REPAIR
+    ).count()
+
+    data = {
+        "pending_requests": pending_count,
+        "total_assets": total_assets_count,
+        "assigned_assets": assigned_assets_count,
+        "under_repair": under_repair_count,
+    }
+
+    logger.info(f"Dashboard summary viewed by admin {request.user}: {data}")
+
+    return Response(data, status=status.HTTP_200_OK)
