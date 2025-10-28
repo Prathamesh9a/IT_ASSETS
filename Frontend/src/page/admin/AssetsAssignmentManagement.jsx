@@ -13,71 +13,13 @@ import {
   useAssignAssetMutation,
   useGetAssetsQuery,
   useGetAssetTypeQuery,
+  useGetAssignedListQuery,
 } from "@/store/api/assetsApi";
 import { toast } from "sonner";
 import { useGetUsersQuery } from "@/store/api/userApi";
-const tableData = [
-  {
-    id: "INV001",
-    type: "Laptop",
-    image: assetImage,
-    model: "MacBook Pro",
-    status: "Under Repair",
-    assignedTo: "Alice Johnson",
-    purchasedDate: "2023-06-10",
-    action: "Retire",
-  },
-  {
-    id: "INV002",
-    type: "Desktop",
-    image: assetImage,
-    model: "Dell OptiPlex",
-    status: "Assigned",
-    assignedTo: "Bob Smith",
-    purchasedDate: "2022-11-05",
-    action: "Edit",
-  },
-  {
-    id: "INV003",
-    type: "Monitor",
-    image: assetImage,
-    model: 'Samsung 24"',
-    status: "Under Repair",
-    assignedTo: "Charlie Brown",
-    purchasedDate: "2023-01-20",
-    action: "Edit",
-  },
-  {
-    id: "INV004",
-    type: "Printer",
-    image: assetImage,
-    model: "HP LaserJet",
-    status: "Assigned",
-    assignedTo: "Diana Prince",
-    purchasedDate: "2022-09-15",
-    action: "Retire",
-  },
-  {
-    id: "INV005",
-    type: "Tablet",
-    image: assetImage,
-    model: "iPad Pro",
-    status: "Under Repair",
-    assignedTo: "Ethan Hunt",
-    purchasedDate: "2023-03-12",
-  },
-  {
-    id: "INV006",
-    type: "Laptop",
-    image: assetImage,
-    model: "Lenovo ThinkPad",
-    status: "Assigned",
-    assignedTo: "Fiona Gallagher",
-    purchasedDate: "2022-12-01",
-  },
-  // Add more entries similarly...
-];
+
 const AssetsAssignmentManagement = () => {
+  const BASE_URL = import.meta.env.VITE_BASE_IMAGE_URL;
   // for use in customVdropdown
   const [activeField, setActiveField] = useState("");
   const [assingmentData, setAssignmentData] = useState({
@@ -92,6 +34,9 @@ const AssetsAssignmentManagement = () => {
 
   const { data: assetType, isLoading: isLoadingAssetType } =
     useGetAssetTypeQuery();
+  const { data: assetsList, isLoading: isLoadingAssetsList } =
+    useGetAssignedListQuery();
+  console.log("assetlist", assetsList);
 
   const {
     data: assetData,
@@ -366,9 +311,7 @@ const AssetsAssignmentManagement = () => {
                   <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Assigned To
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Department
-                  </th>
+
                   <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Assigned Date
                   </th>
@@ -382,48 +325,62 @@ const AssetsAssignmentManagement = () => {
               </thead>
 
               <tbody>
-                {tableData.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-200">
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <img
-                        src={item.image || "https://placehold.co/100x100"}
-                        alt=""
-                        className="  h-20"
-                      />
-                    </td>
-                    <td className=" whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.id}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.type}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.model}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <div className="flex justify-center ">
-                        <StatusButton status={item.status} />
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.assignedTo}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.purchasedDate}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <div className="flex gap-2 justify-center">
-                        <button className="px-6 py-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
-                          Transfer
-                        </button>
+                {!isLoadingAssetsList &&
+                  assetsList?.map((item) => (
+                    <tr key={item.id} className="border-b border-gray-200">
+                      {/* Image */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        <img
+                          src={
+                            item.asset?.images?.[0]?.image
+                              ? `${BASE_URL}${item.asset?.images?.[0]?.image}`
+                              : "https://placehold.co/100x100"
+                          }
+                          alt="Asset"
+                          className="h-20"
+                        />
+                      </td>
 
-                        <button className="px-6 py-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
-                          Unassign
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Asset ID */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.asset?.id}
+                      </td>
+
+                      {/* Asset name */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.asset?.product_name}
+                      </td>
+                      {/* Assigned To */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.employee?.first_name} {item.employee?.last_name}
+                      </td>
+
+                      {/* Purchased/Assigned Date */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.assigned_date}
+                      </td>
+
+                      {/* Status (your custom component) */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        <div className="flex justify-center ">
+                          <StatusButton status={item.status} />
+                        </div>
+                      </td>
+
+                      {/* Action buttons */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        <div className="flex gap-2 justify-center">
+                          <button className="px-6 py-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                            Transfer
+                          </button>
+
+                          <button className="px-6 py-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                            Unassign
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

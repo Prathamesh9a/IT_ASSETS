@@ -257,55 +257,6 @@ const AddNewAsset = () => {
     else if (e.type === "dragleave") setDragActive(false);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const files = Array.from(e.dataTransfer.files).filter(
-        (file) =>
-          file.type.startsWith("image/") || file.type.startsWith("video/")
-      );
-      setUploadedFiles((prev) => [...prev, ...files]);
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-
-      // Log files to debug
-      // console.log("Selected files:", files);
-      // files.forEach(file => {
-      //   console.log(`File: ${file.name}, Type: ${file.type}, Size: ${file.size}`);
-      // });
-
-      // More flexible validation
-      const validFiles = files.filter((file) => {
-        const isImage = file.type.startsWith("image/");
-        const isVideo = file.type.startsWith("video/");
-        const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
-
-        if (!isImage && !isVideo) {
-          console.warn(`Invalid file type: ${file.type}`);
-          toast.error(`Invalid file type: ${file.type}`);
-        }
-        if (!isValidSize) {
-          console.warn(`File too large: ${file.size} bytes`);
-          toast.error(`File too large: ${file.size} bytes`);
-        }
-
-        return (isImage || isVideo) && isValidSize;
-      });
-
-      setUploadedFiles((prev) => [...prev, ...validFiles]);
-    }
-  };
-
-  const removeFile = (index) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // submit handler
   const handleSubmitForm = async (e) => {
     e.preventDefault();
