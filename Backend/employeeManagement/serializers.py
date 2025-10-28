@@ -18,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined',
             'employee_id',
             'role',
+            'id',
         ]
 
 class UserCreateSerializer(serializers.ModelSerializer):

@@ -53,6 +53,7 @@ const AddNewAsset = () => {
     error: assetError,
     isSuccess: assetIsSuccess,
   } = useGetAssetsQuery();
+
   const [
     deleteAsset,
     { data: deleteData, isError: deleteIsError, error: deleteiserro },
@@ -359,8 +360,8 @@ const AddNewAsset = () => {
     }
 
     console.log("formdayta", formData);
-    // navigate("/adminDashboard");
-    // navigate(0);
+    navigate("/adminDashboard");
+    navigate(0);
   };
 
   // handel cancle form value
