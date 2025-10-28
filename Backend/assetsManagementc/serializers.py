@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from employeeManagement.models import Employee
-from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment
+from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment,AssetLog
 from django.utils import timezone
 from django.db import transaction
 from .models import AssetType
@@ -391,3 +391,70 @@ class MyPendingRequestSerializer(serializers.ModelSerializer):
             "status",
             "remarks",
         ]    
+
+
+class LogAssetImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetImage
+        fields = [
+            "id",
+            "image",
+            "uploaded_at",
+        ]
+        read_only_fields = ["id", "uploaded_at"]
+
+
+class LogAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    images = LogAssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]
+        read_only_fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]
+
+
+class AssetLogSerializer(serializers.ModelSerializer):
+    asset = LogAssetSerializer(read_only=True)
+
+    class Meta:
+        model = AssetLog
+        fields = [
+            "id",
+            "asset",
+            "employee",
+            "action",
+            "description",
+            "timestamp",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "employee",
+            "action",
+            "description",
+            "timestamp",
+        ]        
