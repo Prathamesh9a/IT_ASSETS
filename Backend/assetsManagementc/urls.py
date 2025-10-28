@@ -20,6 +20,7 @@ urlpatterns = [
     path("revoke/", v.revoke_asset, name="revoke-asset"),
     path("assets/requests/pending/user/", v.user_pending_requests, name="user-pending-requests"),
     path("assets/logs/", v.list_asset_log, name="list-asset-log"),
+    path("dashboard/summary/", v.dashboard_summary, name="dashboard-summary"),
 
 ]
 

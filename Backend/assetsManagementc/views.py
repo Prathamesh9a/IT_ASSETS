@@ -9,7 +9,8 @@ from .serializers import AssignAssetSerializer,MyPendingRequestSerializer
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import MyAssetSerializer
+from django.db.models import Q
+from .serializers import MyAssetSerializer,DashboardSummarySerializer
 from .models import Asset, AssetImage, AssetAssignment,AssetType
 from .serializers import  AssignedAssetListRowSerializer,AssetLogSerializer
 from .serializers import AssetSerializer, AssetCreateSerializer,RequestAssignmentSerializer,AssetAssignmentSerializer, ApproveRejectSerializer, AssetUpdateSerializer,DeleteAssetsSerializer,AssetTypeSerializer
@@ -1031,5 +1032,64 @@ def list_asset_log(request):
 
     data = AssetLogSerializer(logs, many=True).data
     logger.info(f"Asset log fetched by {request.user}. Count={len(data)}")
+
+    return Response(data, status=status.HTTP_200_OK)
+
+dashboard_example_response = openapi.Response(
+    description="Dashboard summary numbers for admin",
+    examples={
+        "application/json": {
+            "pending_requests": 4,
+            "total_assets": 57,
+            "assigned_assets": 23,
+            "under_repair": 3
+        }
+    }
+)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get summary metrics for dashboard (Admin only)",
+    responses={200: dashboard_example_response, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def dashboard_summary(request):
+    """
+    Admin dashboard metrics:
+    - pending_requests: AssetAssignment rows where status ends with '_requested'
+    - total_assets: all Asset rows
+    - assigned_assets: Asset rows with status = 'Assigned'
+    - under_repair: Asset rows with status = 'In Repair'
+    """
+    set_request_context(request)
+
+    # count pending requests
+    pending_count = AssetAssignment.objects.filter(
+        Q(status__iendswith="requested")
+    ).count()
+
+    # total assets
+    total_assets_count = Asset.objects.count()
+
+    # assets marked assigned
+    assigned_assets_count = Asset.objects.filter(
+        status=Asset.Status.ASSIGNED
+    ).count()
+
+    # assets marked in repair
+    under_repair_count = Asset.objects.filter(
+        status=Asset.Status.IN_REPAIR
+    ).count()
+
+    data = {
+        "pending_requests": pending_count,
+        "total_assets": total_assets_count,
+        "assigned_assets": assigned_assets_count,
+        "under_repair": under_repair_count,
+    }
+
+    logger.info(f"Dashboard summary viewed by admin {request.user}: {data}")
 
     return Response(data, status=status.HTTP_200_OK)
