@@ -338,3 +338,56 @@ class ApproveRejectSerializer(serializers.Serializer):
         if data.get("action") == "reject" and not data.get("reason"):
             raise serializers.ValidationError({"reason": "Reason is required when rejecting"})
         return data       
+
+
+class AssignedEmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+        ]
+
+class MyPendingAssetSerializer(serializers.ModelSerializer):
+    asset_type_name = serializers.CharField(source="asset_type.name", read_only=True)
+    vendor_name = serializers.CharField(source="vendor.name", read_only=True, default=None)
+    images = AssetImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Asset
+        fields = [
+            "id",
+            "asset_type_name",
+            "product_name",
+            "model_no",
+            "serial_no",
+            "os_version",
+            "configuration",
+            "status",
+            "vendor_name",
+            "images",
+        ]
+
+
+class MyPendingRequestSerializer(serializers.ModelSerializer):
+    asset = MyPendingAssetSerializer(read_only=True)
+    employee = AssignedEmployeeSerializer(read_only=True)
+    class Meta:
+        model = AssetAssignment
+        fields = [
+            "id",
+            "employee",
+            "asset",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]
+        read_only_fields = [
+            "id",
+            "asset",
+            "assigned_date",
+            "status",
+            "remarks",
+        ]    
