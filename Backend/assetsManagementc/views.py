@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from .models import Asset, AssetAssignment, AssetLog
-from .serializers import AssignAssetSerializer
+from .serializers import AssignAssetSerializer,MyPendingRequestSerializer
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -472,7 +472,7 @@ def list_assigned_assets(request):
 
     return Response(data, status=status.HTTP_200_OK)
 
-#--------------------revoke assets
+#--------------------revoke assets------------------
 revoke_success_example = openapi.Response(
     description="Asset revoked and made available",
     examples={
@@ -745,7 +745,79 @@ def pending_requests(request):
     serializer = AssetAssignmentSerializer(pending, many=True)
     logger.info(f"Pending requests retrieved by admin {request.user}")
     return Response(serializer.data, status=status.HTTP_200_OK)
+#------------------Pending request for user---
+user_pending_example = openapi.Response(
+    description="Pending requests for the logged-in user",
+    examples={
+        "application/json": [
+            {
+                "id": 51,
+                "employee": {
+                    "id": 22,
+                    "first_name": "Ravi",
+                    "last_name": "Narayan",
+                    "email": "ravi.narayan@example.com"
+                },
+                "asset": {
+                    "id": 9,
+                    "asset_type_name": "Desktop",
+                    "product_name": "Dell OptiPlex 7010",
+                    "model_no": "DOP-7010-2025",
+                    "serial_no": "DOP1004",
+                    "os_version": "Windows 11 Pro",
+                    "configuration": "Intel i7, 16GB RAM, 1TB HDD, 512GB SSD",
+                    "status": "surrender_requested",
+                    "vendor_name": "Dell India",
+                    "images": []
+                },
+                "assigned_date": "2025-10-10",
+                "status": "surrender_requested",
+                "remarks": "Leaving team"
+            }
+        ]
+    }
+)
 
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get all your pending asset requests",
+    responses={200: user_pending_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsUser])
+def user_pending_requests(request):
+    """
+    User view.
+
+    Return all AssetAssignment rows where:
+    - employee == request.user
+    - status ends with '_requested' (example: surrender_requested)
+    - returned_date is null (asset still with user)
+
+    Includes asset info, request status, remarks, assigned_date.
+    """
+    set_request_context(request)
+
+    # request.user IS the Employee model in your project
+    employee_obj = request.user
+
+    pending_qs = (
+        AssetAssignment.objects
+        .filter(
+            employee=employee_obj,
+            status__iendswith="requested",
+            returned_date__isnull=True,
+        )
+        .select_related("asset", "asset__asset_type", "asset__vendor", "employee")
+        .prefetch_related("asset__images")
+        .order_by("-assigned_date")
+    )
+
+    data = MyPendingRequestSerializer(pending_qs, many=True).data
+    logger.info(f"Pending requests retrieved for user {request.user}; count={len(data)}")
+
+    return Response(data, status=status.HTTP_200_OK)
 #----------approve reject request(admin)-------
 decision_success = openapi.Response(
     description="Decision applied",

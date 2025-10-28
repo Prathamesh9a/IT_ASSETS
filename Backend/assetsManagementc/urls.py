@@ -18,6 +18,7 @@ urlpatterns = [
     path("asset-types/", v.get_asset_types, name="get-asset-types"),
     path("assigned/list/", v.list_assigned_assets, name="list-assigned-assets"),
     path("revoke/", v.revoke_asset, name="revoke-asset"),
+    path("assets/requests/pending/user/", v.user_pending_requests, name="user-pending-requests"),
 ]
 
 
