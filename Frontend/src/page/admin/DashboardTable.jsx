@@ -2,6 +2,8 @@ import Header from "@/components/Header";
 import React, { useState } from "react";
 import NavigationTabs from "@/components/NavigationTabs";
 import { useSelector } from "react-redux";
+import { toast } from "sonner";
+
 import Card from "@/components/Card";
 import CardIcon1 from "@/components/icons/CardIcon1";
 import CardIcon2 from "@/components/icons/CardIcon2";
@@ -12,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import {
   useGetAssetsQuery,
   useGetDashboardSummaryQuery,
+  useUpdateAssetMutation,
 } from "@/store/api/assetsApi";
 import { useGetDepartmentsQuery } from "@/store/api/settingsApi";
 import { useGetEmployeesQuery } from "@/store/api/employeeApi";
@@ -29,6 +32,63 @@ const DashboardTable = () => {
     useGetDepartmentsQuery();
   const { data: employeeData, isLoading: employeeDataIsLoading } =
     useGetEmployeesQuery();
+
+  const [editingCell, setEditingCell] = useState({ id: null, key: null });
+  const [tempValue, setTempValue] = useState("");
+  const [updateAsset] = useUpdateAssetMutation();
+
+  const handleCellClick = (id, key, currentValue) => {
+    // ensure tempValue is string that matches the option value when needed
+    if (key === "is_amc") {
+      setTempValue(
+        currentValue === true || currentValue === "true"
+          ? "Yes"
+          : currentValue === false || currentValue === "false"
+          ? "No"
+          : currentValue || "No"
+      );
+    } else {
+      setTempValue(currentValue ?? "");
+    }
+    setEditingCell({ id, key });
+  };
+
+  const handleBlur = async (item) => {
+    if (!editingCell.key) return;
+
+    const key = editingCell.key;
+    let value = tempValue;
+
+    // ✅ Validation before sending to server
+    if (key === "is_amc") {
+      value = tempValue === "Yes"; // convert to boolean
+
+      const hasVendor =
+        item.amc_vendor_name && item.amc_vendor_name.trim() !== "";
+
+      if (value === true && !hasVendor) {
+        toast.error("Please add AMC Vendor before selecting AMC");
+        // ✅ do not change old value
+        setEditingCell({ id: null, key: null });
+        setTempValue("");
+        return;
+      }
+    }
+
+    // ✅ Build FormData after validation passes
+    const formData = new FormData();
+    formData.append(key, value);
+
+    try {
+      await updateAsset({ id: item.id, data: formData }).unwrap();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setEditingCell({ id: null, key: null });
+      setTempValue("");
+    }
+  };
+
   const activeUsers = !employeeDataIsLoading
     ? (employeeData || []).filter((emp) => emp?.user?.is_active)
     : [];
@@ -164,46 +224,286 @@ const DashboardTable = () => {
               </thead>
 
               <tbody>
-                {data?.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-200">
-                    {/* <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        <img src={item.image} alt="" className='  h-20' />
-                    </td> */}
-                    <td className=" whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.asset_type_name}
+                {data?.map((item) => (
+                  <tr key={item.id} className="border-b border-gray-200">
+                    {/* asset_type_name */}
+                    <td
+                      className="whitespace-nowrap text-start p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(item.id, "asset_type", item.asset_type)
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "asset_type" ? (
+                        <input
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.asset_type_name
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.product_name}
+
+                    {/* product_name */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "product_name",
+                          item.product_name
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "product_name" ? (
+                        <input
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.product_name
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.model_no}
+
+                    {/* model_no */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(item.id, "model_no", item.model_no)
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "model_no" ? (
+                        <input
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.model_no
+                      )}
                     </td>
-                    <td className=" whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.purchase_date}
+
+                    {/* purchase_date */}
+                    <td
+                      className="whitespace-nowrap text-start p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "purchase_date",
+                          item.purchase_date
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "purchase_date" ? (
+                        <input
+                          type="date"
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.purchase_date
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.vendor_name}
+
+                    {/* vendor */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(item.id, "vendor", item.vendor)
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "vendor" ? (
+                        <input
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.vendor_name
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.is_amc ? "Yes" : "No"}
-                    </td>{" "}
-                    <td className=" whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.amc_start_date}
+
+                    {/* is_amc */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={
+                        () => handleCellClick(item.id, "is_amc", item.is_amc) // pass boolean here
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "is_amc" ? (
+                        <select
+                          autoFocus
+                          value={tempValue}
+                          onClick={(e) => e.stopPropagation()} // <- prevent td onClick from firing again
+                          onMouseDown={(e) => e.stopPropagation()} // <- extra guard for some browsers
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        >
+                          <option value="Yes">Yes</option>
+                          <option value="No">No</option>
+                        </select>
+                      ) : item.is_amc ? (
+                        "Yes"
+                      ) : (
+                        "No"
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.amc_end_date}
+
+                    {/* amc_start_date */}
+                    <td
+                      className="whitespace-nowrap text-start p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "amc_start_date",
+                          item.amc_start_date
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "amc_start_date" ? (
+                        <input
+                          type="date"
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.amc_start_date
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.amc_vendor_name}
+
+                    {/* amc_end_date */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "amc_end_date",
+                          item.amc_end_date
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "amc_end_date" ? (
+                        <input
+                          type="date"
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.amc_end_date
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                      {item.warranty_expiry}
+
+                    {/* amc_vendor */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "amc_vendor",
+                          item.amc_vendor_name
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "amc_vendor" ? (
+                        <input
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.amc_vendor_name
+                      )}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+
+                    {/* warranty_expiry */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "warranty_expiry",
+                          item.warranty_expiry
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "warranty_expiry" ? (
+                        <input
+                          type="date"
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.warranty_expiry
+                      )}
+                    </td>
+
+                    {/* status */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(item.id, "status", item.status)
+                      }
+                    >
                       {item.status}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.configuration}
+
+                    {/* configuration */}
+                    <td
+                      className="whitespace-nowrap text-center p-3 text-base roboto font-normal cursor-pointer"
+                      onClick={() =>
+                        handleCellClick(
+                          item.id,
+                          "configuration",
+                          item.configuration
+                        )
+                      }
+                    >
+                      {editingCell.id === item.id &&
+                      editingCell.key === "configuration" ? (
+                        <input
+                          value={tempValue}
+                          autoFocus
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(item)}
+                          className="border rounded p-1 w-full text-black"
+                        />
+                      ) : (
+                        item.configuration
+                      )}
                     </td>
                   </tr>
                 ))}
