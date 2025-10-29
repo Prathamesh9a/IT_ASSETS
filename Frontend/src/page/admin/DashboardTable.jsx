@@ -9,18 +9,12 @@ import CardIcon3 from "@/components/icons/CardIcon3";
 import CardIcon4 from "@/components/icons/CardIcon4";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import {
-  useGetAssetsQuery,
-  useGetDashboardSummaryQuery,
-} from "@/store/api/assetsApi";
+import { useGetAssetsQuery } from "@/store/api/assetsApi";
 import { useGetDepartmentsQuery } from "@/store/api/settingsApi";
 import { useGetEmployeesQuery } from "@/store/api/employeeApi";
 const DashboardTable = () => {
   const { data, isLoading } = useGetAssetsQuery();
   console.log("dtata", data);
-  const { data: dashboardSummary, isLoading: isLoadingdashboardSummary } =
-    useGetDashboardSummaryQuery();
-  console.log("dashboardSummary", dashboardSummary);
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -33,24 +27,23 @@ const DashboardTable = () => {
     ? (employeeData || []).filter((emp) => emp?.user?.is_active)
     : [];
 
+  const counts = [
+    getAsset?.length,
+    activeUsers.length,
+    10,
+    departmentData?.departments?.length,
+  ];
   const loadings = [
     getAssetIsLoading,
     employeeDataIsLoading,
     false,
     getDepartmentIsLoading,
   ];
-  const counts = [
-    dashboardSummary?.total_assets,
-    dashboardSummary?.assigned_assets,
-    dashboardSummary?.pending_requests,
-    dashboardSummary?.under_repair,
-  ];
-
   const cardName = [
     "Total Assets",
-    "Assigned Assets",
-    "Pending Requests",
-    "Under Maintainance",
+    "Active Users",
+    "Requested Today",
+    "Department",
   ];
   const tabs = [
     "Overview",
@@ -85,7 +78,7 @@ const DashboardTable = () => {
     }
   };
   //   console.log(activeTab);
-
+ 
   const redirectToAddAssets = () => {
     navigate("/addAssets");
   };
@@ -120,7 +113,7 @@ const DashboardTable = () => {
         </h1> */}
         {/* tabel */}
         <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-6 md:mt-6">
-          <div className="max-h-[200px]  mx-auto md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
+          <div className="max-h-[400px]  mx-auto md:max-h-[440px] overflow-y-auto  border border-gray-200 rounded-lg">
             <table className=" w-full min-w-max overflow-x-auto">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
@@ -131,7 +124,7 @@ const DashboardTable = () => {
                     Product Name
                   </th>
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Model Number
+                    Modal Number
                   </th>{" "}
                   <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Purchase Date

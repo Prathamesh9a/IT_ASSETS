@@ -2,13 +2,12 @@ import { CustomVDropdown } from "@/components/CustomVDropdown";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import {
-  useGetAssetByIdQuery,
   useGetmyAssetsQuery,
   useRequestActionMutation,
 } from "@/store/api/assetsApi";
 import { useGetEmployeesQuery } from "@/store/api/employeeApi";
 import { useGetDepartmentsQuery } from "@/store/api/settingsApi";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -16,7 +15,6 @@ import { toast } from "sonner";
 const SubmitAssetsRequest = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [activeField, setActiveField] = useState("");
 
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const { data: employeeData, isLoading: empLoading, isError: empError } = useGetEmployeesQuery();
@@ -32,6 +30,7 @@ const SubmitAssetsRequest = () => {
     status_requested: action || "",
     asset_id: id || "",
     reason: "",
+    transfer_to_employee_id: "",
   });
 
   const [dragActive, setDragActive] = useState(false);
@@ -120,11 +119,14 @@ const SubmitAssetsRequest = () => {
         asset_id: formData.asset_id,
         status_requested: formData.status_requested,
         reason: formData.reason,
+        ...(formData.transfer_to_employee_id && {
+          transfer_to_employee_id: formData.transfer_to_employee_id,
+        }),
       };
       const res = await requestAction(payload).unwrap();
       toast.success(res?.detail ?? "Request submitted");
-      setFormData({ status_requested: "", asset_id: "", reason: "" });
-      navigate(-1);
+      setFormData({ status_requested: "", asset_id: "", reason: "", transfer_to_employee_id: "" });
+      navigate("/userdashboard");
     } catch (err) {
       const msg =
         err?.data?.detail ||
@@ -135,35 +137,34 @@ const SubmitAssetsRequest = () => {
     }
   };
 
-  const handleCancel = () => navigate(-1);
-
-  // --------------------------------------------------------------------- //
-  //  Focus styles
-  // --------------------------------------------------------------------- //
-  const focusStyle = (field) => ({
-    label: activeField === field ? "text-[#2066FF]" : "text-[#6F7C8E]",
-    border: activeField === field ? "border-[#2066FF]" : "border-[#E5E7EB]",
-  });
+  const handleCancel = () => navigate("/userdashboard");
 
   return (
     <>
       <Header great="Add/Edit Assets" showNotification={true} />
       <div className="px-6 mt-24">
-        <h1 className="mt-6 md:mt-14 font-bold text-2xl text-[#1F2937]">
-          {action === "assetsRequest" ? "Submit Asset Request" : "Report Issue"}
-        </h1>
+        {/* ---------- HEADING + BACK BUTTON ---------- */}
+        <div className="flex items-center gap-3 mt-6 md:mt-14">
+          <button
+            onClick={() => navigate("/userdashboard")}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-5 h-5 text-[#1F2937]" />
+          </button>
+          <h1 className="font-bold text-2xl text-[#1F2937]">
+            {action === "assetsRequest" ? "Submit Asset Request" : "Report Issue"}
+          </h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="mt-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto space-y-8">
+
             {/* ---------- Top Row (Request Type + Asset) ---------- */}
             <div className="grid md:grid-cols-2 gap-6">
               {/* Request Type */}
-              <div className="relative">
-                <label
-                  className={`absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium ${focusStyle(
-                    "request"
-                  ).label}`}
-                >
+              <div>
+                <label className="block text-sm font-medium text-[#6F7C8E] mb-1">
                   Request Type
                 </label>
                 <CustomVDropdown
@@ -176,19 +177,13 @@ const SubmitAssetsRequest = () => {
                   value={formData.status_requested}
                   options={requestTypeOptions}
                   placeholder="Select Request Type"
-                  className={`w-full rounded-lg border ${focusStyle("request").border} focus:outline-none`}
-                  onFocus={() => setActiveField("request")}
-                  onBlur={() => setActiveField("")}
+                  className="w-full h-12 rounded-lg border border-[#E5E7EB] focus:border-[#2066FF] focus:outline-none"
                 />
               </div>
 
               {/* Asset */}
-              <div className="relative">
-                <label
-                  className={`absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium ${focusStyle(
-                    "asset"
-                  ).label}`}
-                >
+              <div>
+                <label className="block text-sm font-medium text-[#6F7C8E] mb-1">
                   Asset
                 </label>
                 <CustomVDropdown
@@ -204,16 +199,14 @@ const SubmitAssetsRequest = () => {
                       ? "Failed to load Assets"
                       : "Select Asset"
                   }
-                  className={`w-full rounded-lg border ${focusStyle("asset").border} focus:outline-none`}
-                  onFocus={() => setActiveField("asset")}
-                  onBlur={() => setActiveField("")}
+                  className="w-full h-12 rounded-lg border border-[#E5E7EB] focus:border-[#2066FF] focus:outline-none"
                   disableWhen={assetsLoading || assetsError}
                 />
               </div>
             </div>
 
             {/* ---------- Upload + Reason ---------- */}
-            <div className="mt-8 grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-6">
               {/* Upload */}
               <div
                 className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
@@ -279,12 +272,8 @@ const SubmitAssetsRequest = () => {
               </div>
 
               {/* Reason / Comments */}
-              <div className="relative">
-                <label
-                  className={`absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium ${focusStyle(
-                    "reason"
-                  ).label}`}
-                >
+              <div>
+                <label className="block text-sm font-medium text-[#6F7C8E] mb-1">
                   Reason/Comments
                 </label>
                 <textarea
@@ -294,26 +283,18 @@ const SubmitAssetsRequest = () => {
                     setFormData((p) => ({ ...p, reason: e.target.value }))
                   }
                   placeholder="Please provide details...."
-                  className={`w-full rounded-lg border ${focusStyle(
-                    "reason"
-                  ).border} p-3 resize-none focus:outline-none`}
-                  onFocus={() => setActiveField("reason")}
-                  onBlur={() => setActiveField("")}
+                  className="w-full rounded-lg border border-[#E5E7EB] p-3 resize-none focus:border-[#2066FF] focus:outline-none"
                 />
               </div>
             </div>
 
             {/* ---------- Transfer fields (only when needed) ---------- */}
             {formData.status_requested?.toLowerCase() === "transfer_requested" && (
-              <div className="mt-8 grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 {/* Department */}
-                <div className="relative">
-                  <label
-                    className={`absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium ${focusStyle(
-                      "dept"
-                    ).label}`}
-                  >
-                    Departments
+                <div>
+                  <label className="block text-sm font-medium text-[#6F7C8E] mb-1">
+                    Department
                   </label>
                   <CustomVDropdown
                     onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -326,22 +307,14 @@ const SubmitAssetsRequest = () => {
                         ? "Failed to load Department"
                         : "Select Department"
                     }
-                    className={`w-full rounded-lg border ${focusStyle(
-                      "dept"
-                    ).border} focus:outline-none`}
-                    onFocus={() => setActiveField("dept")}
-                    onBlur={() => setActiveField("")}
+                    className="w-full h-12 rounded-lg border border-[#E5E7EB] focus:border-[#2066FF] focus:outline-none"
                     disableWhen={deptLoading || deptError}
                   />
                 </div>
 
                 {/* Transfer To */}
-                <div className="relative">
-                  <label
-                    className={`absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium ${focusStyle(
-                      "emp"
-                    ).label}`}
-                  >
+                <div>
+                  <label className="block text-sm font-medium text-[#6F7C8E] mb-1">
                     Transfer To
                   </label>
                   <CustomVDropdown
@@ -358,13 +331,11 @@ const SubmitAssetsRequest = () => {
                         ? "Loading employee..."
                         : empError
                         ? "Failed to load employee"
+                        : !selectedDepartment
+                        ? "Select department first"
                         : "Select employee"
                     }
-                    className={`w-full rounded-lg border ${focusStyle(
-                      "emp"
-                    ).border} focus:outline-none`}
-                    onFocus={() => setActiveField("emp")}
-                    onBlur={() => setActiveField("")}
+                    className="w-full h-12 rounded-lg border border-[#E5E7EB] focus:border-[#2066FF] focus:outline-none"
                     disableWhen={empLoading || empError || !selectedDepartment}
                   />
                 </div>
@@ -372,7 +343,7 @@ const SubmitAssetsRequest = () => {
             )}
 
             {/* ---------- Buttons ---------- */}
-            <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
               <Button
                 type="submit"
                 className="order-2 sm:order-1 w-full sm:w-auto px-8 py-3 bg-[#1E3A8A] hover:bg-[#1D4ED8] text-white rounded-full font-semibold text-base"

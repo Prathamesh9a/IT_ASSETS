@@ -20,7 +20,7 @@ import { useGetUsersQuery } from "@/store/api/userApi";
 
 const AssetsAssignmentManagement = () => {
   const BASE_URL = import.meta.env.VITE_BASE_IMAGE_URL;
-  // for use in customVdropdown
+  // for use in customVdropdownCurrent Assignments
   const [activeField, setActiveField] = useState("");
   const [assingmentData, setAssignmentData] = useState({
     asset_id: "",
@@ -291,7 +291,7 @@ const AssetsAssignmentManagement = () => {
           </div>
         </div>
         <h1 className=" roboto font-bold text-xl sm:text-[24px] md:text-[30px] mt-3">
-          Current Assignments
+          Current Assets Assigned
         </h1>
         <div className="overflow-x-auto my-6 md:mt-9">
           <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
