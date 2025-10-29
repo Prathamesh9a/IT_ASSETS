@@ -39,8 +39,8 @@ export const assetsApi = createApi({
     updateAsset: builder.mutation({
       query: ({ id, data }) => ({
         url: `/assets/${id}/`,
-        method: "PUT",
-        body: data,
+        method: "PATCH",
+        body: data, // ← MUST pass FormData
       }),
       invalidatesTags: ["Assets"],
     }),
