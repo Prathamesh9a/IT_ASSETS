@@ -12,13 +12,16 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import StatusButton from "@/components/StatusButoon";
 import {
+  useCreateAssetByFormMutation,
   useCreateAssetMutation,
   useDeleteAssetMutation,
   useGetAssetsQuery,
+  useGetAssetTypeQuery,
   useImportAssetsMutation,
   useUpdateAssetMutation,
   useUploadAssetImageMutation,
 } from "@/store/api/assetsApi";
+
 import { toast } from "sonner";
 import { CustomVDropdown } from "@/components/CustomVDropdown";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,12 +44,16 @@ const AddNewAsset = () => {
   const [bulkAssetStatus, SetbulkAssetStatus] = useState(false);
   const [createAsset, { data, isError, isLoading, error, isSuccess }] =
     useCreateAssetMutation();
+  const { data: assetType, isLoading: isLoadingAssetType } =
+    useGetAssetTypeQuery();
+  // console.log("dtata", assetType);
   const {
     data: assetData,
     isLoading: assetIsLoading,
     error: assetError,
     isSuccess: assetIsSuccess,
   } = useGetAssetsQuery();
+
   const [
     deleteAsset,
     { data: deleteData, isError: deleteIsError, error: deleteiserro },
@@ -73,6 +80,15 @@ const AddNewAsset = () => {
   //  for bulk import  overlay
   const [searchParams] = useSearchParams();
 
+  const [
+    createAssetByForm,
+    {
+      isLoading: isLoadingByForm,
+      isSuccess: isSuccessByForm,
+      isError: isErrorByForm,
+    },
+  ] = useCreateAssetByFormMutation();
+
   useEffect(() => {
     if (searchParams.get("bulkAssetStatus") === "true") {
       SetbulkAssetStatus(true);
@@ -87,23 +103,7 @@ const AddNewAsset = () => {
   const [dragActiveExcel, setDragActiveExcel] = useState(false);
   const [dragActiveZip, setDragActiveZip] = useState(false);
 
-  // Transform backend response -> dropdown options for assetType
-  // const assetTypeOptions = categorieData?.asset_categories?.map((item) => ({
-  //   value: item,
-  //   label: item.charAt(0).toUpperCase() + item.slice(1), // capitalize first letter
-  // })) || [];
-
-  // Transform backend response -> dropdown options for filter
-
-  const assetTypeFilter = [
-    { value: "", label: "All type" },
-    ...(categorieData?.asset_categories?.map((item) => ({
-      value: item,
-      label: item.charAt(0).toUpperCase() + item.slice(1),
-    })) || []),
-  ];
   //  console.log(assetTypeFilter);
-
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(""); // Debounced value
@@ -166,7 +166,7 @@ const AddNewAsset = () => {
       const fieldsToCheck = [
         normalize(asset.name),
         normalize(asset.model_number),
-        normalize(asset.serial_number),
+        normalize(asset.serial_no),
         normalize(asset.type),
         ...formatDateVariants(asset.purchase_date),
       ];
@@ -185,17 +185,15 @@ const AddNewAsset = () => {
 
   // form data
   const [formData, setFormData] = useState({
-    type: "",
-    name: "",
-    model_number: "",
-    serial_number: "",
+    asset_type: "",
+    product_name: "",
+    model_no: "",
+    serial_no: "",
     purchase_date: "",
-    license_key: "",
-    license_expiry: "",
+    purchase_cost: "",
     warranty_expiry: "",
-    assigned_to: "",
-    status: "",
-    version: "",
+    configuration: "",
+    images: [],
   });
 
   const [dragActive, setDragActive] = useState(false);
@@ -247,10 +245,10 @@ const AddNewAsset = () => {
   };
 
   // Convert DD/MM/YYYY -> YYYY-MM-DD (for API)
-  const convertToApiDate = (dateString) => {
-    const [day, month, year] = dateString.split("/");
-    return `${year}-${month}-${day}`;
-  };
+  // const convertToApiDate = (dateString) => {
+  //   const [day, month, year] = dateString.split("/");
+  //   return `${year}-${month}-${day}`;
+  // };
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -259,102 +257,24 @@ const AddNewAsset = () => {
     else if (e.type === "dragleave") setDragActive(false);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const files = Array.from(e.dataTransfer.files).filter(
-        (file) =>
-          file.type.startsWith("image/") || file.type.startsWith("video/")
-      );
-      setUploadedFiles((prev) => [...prev, ...files]);
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-
-      // Log files to debug
-      // console.log("Selected files:", files);
-      // files.forEach(file => {
-      //   console.log(`File: ${file.name}, Type: ${file.type}, Size: ${file.size}`);
-      // });
-
-      // More flexible validation
-      const validFiles = files.filter((file) => {
-        const isImage = file.type.startsWith("image/");
-        const isVideo = file.type.startsWith("video/");
-        const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
-
-        if (!isImage && !isVideo) {
-          console.warn(`Invalid file type: ${file.type}`);
-          toast.error(`Invalid file type: ${file.type}`);
-        }
-        if (!isValidSize) {
-          console.warn(`File too large: ${file.size} bytes`);
-          toast.error(`File too large: ${file.size} bytes`);
-        }
-
-        return (isImage || isVideo) && isValidSize;
-      });
-
-      setUploadedFiles((prev) => [...prev, ...validFiles]);
-    }
-  };
-
-  const removeFile = (index) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // submit handler
   const handleSubmitForm = async (e) => {
     e.preventDefault();
 
-    // Required fields check
-    const requiredFields = ["type", "name", "serial_number", "purchase_date"];
-    const missingFields = requiredFields.filter((field) => !formData[field]);
-
-    if (missingFields.length > 0) {
-      toast(
-        `Please fill in the following required fields: ${missingFields.join(
-          ", "
-        )}`
-      );
-      return;
-    }
-
-    // Validate date formats
-    if (formData.purchase_date && !isValidDate(formData.purchase_date)) {
-      toast("Please enter a valid Purchase Date in DD/MM/YYYY format");
-      return;
-    }
-    if (formData.warranty_expiry && !isValidDate(formData.warranty_expiry)) {
-      toast("Please enter a valid Warranty Until date in DD/MM/YYYY format");
-      return;
-    }
-    if (formData.license_expiry && !isValidDate(formData.license_expiry)) {
-      toast("Please enter a valid License Expiry date in DD/MM/YYYY format");
-      return;
-    }
-
-    // Convert dates to API format
+    // Map local formData keys to Swagger keys
     const payload = {
-      ...formData,
-      purchase_date: convertToApiDate(formData.purchase_date),
-      warranty_expiry: formData.warranty_expiry
-        ? convertToApiDate(formData.warranty_expiry)
-        : null,
-      license_expiry: formData.license_expiry
-        ? convertToApiDate(formData.license_expiry)
-        : null,
-      assigned_to: formData.assigned_to
-        ? parseInt(formData.assigned_to, 10)
-        : null,
+      asset_type: formData.asset_type,
+      product_name: formData.product_name,
+      model_no: formData.model_no,
+      serial_no: formData.serial_no,
+      purchase_date: formData.purchase_date,
+      purchase_cost: formData.purchase_cost,
+      warranty_expiry: formData.warranty_expiry || null,
+      configuration: formData.configuration,
+      images: formData.images,
     };
 
-    // Convert payload to FormData
+    // Append images if they exist
     const formDataToSend = new FormData();
     Object.entries(payload).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== "") {
@@ -362,56 +282,37 @@ const AddNewAsset = () => {
       }
     });
 
-    // Append multiple images if present
-    // Add images with better logging
+    // Append images
     if (uploadedFiles && uploadedFiles.length > 0) {
-      // console.log("Uploading files:", uploadedFiles.length);
-      uploadedFiles.forEach((file, index) => {
-        // console.log(`Appending file ${index + 1}:`, file.name, file.type);
+      uploadedFiles.forEach((file) => {
         formDataToSend.append("images", file);
       });
-    } else {
-      // console.log("No files to upload");
     }
 
     try {
       let response;
       if (isEditing && editingAssetId) {
-        // Call update mutation
         response = await updateAsset({
           id: editingAssetId,
           data: formDataToSend,
         }).unwrap();
-        toast.success("Asset updated successfully!", { position: "top-right" });
+        toast.success("Asset updated successfully!");
       } else {
-        // Call create mutation
-        response = await createAsset(formDataToSend).unwrap();
-        toast.success("Asset added successfully!", { position: "top-right" });
+        // Use createAssetByForm for POST
+        response = await createAssetByForm(payload).unwrap();
+        toast.success("Asset added successfully!");
       }
-
-      // console.log("✅ Form Submitted:", response);
-      handleCancelForm(); // reset form
+      handleCancelForm();
       setIsEditing(false);
       setEditingAssetId(null);
     } catch (error) {
-      console.error("❌ API Error:", error);
-
-      if (error && error.data) {
-        const errors = error.data;
-        Object.entries(errors).forEach(([field, messages]) => {
-          if (Array.isArray(messages)) {
-            messages.forEach((msg) =>
-              toast.error(`${field}: ${msg}`, { position: "top-right" })
-            );
-          } else {
-            toast.error(`${field}: ${messages}`, { position: "top-right" });
-          }
-        });
-      } else {
-        toast.error("Failed to submit asset", { position: "top-right" });
-      }
-    } finally {
+      console.error("API Error:", error);
+      toast.error("Failed to submit asset");
     }
+
+    console.log("formdayta", formData);
+    navigate("/adminDashboard");
+    navigate(0);
   };
 
   // handel cancle form value
@@ -423,7 +324,7 @@ const AddNewAsset = () => {
       model_number: "",
       // assetDescription: "",
       // assetCategory: "",
-      serial_number: "",
+      serial_no: "",
       purchase_date: "",
       license_key: "",
       license_expiry: "",
@@ -451,102 +352,7 @@ const AddNewAsset = () => {
       borderColor: activeField === field ? "#2066FF" : "#E1E1E1",
     },
   });
-  const assetTypeOptions =
-    [
-      {
-        value: "hardware",
-        label: "Hardware",
-      },
-      {
-        value: "software",
-        label: "Software",
-      },
-    ] || [];
-  const fieldList = [
-    {
-      key: "type",
-      label: "Asset Type",
-      type: "dropdown",
-      placeholder: "Select Asset Type",
-      options: assetTypeOptions,
-    },
-    {
-      key: "name",
-      label: "Asset Name",
-      type: "input",
-      placeholder: "Enter Asset Name",
-    },
-    {
-      key: "status",
-      label: "Status",
-      type: "dropdown",
-      placeholder: "Select Status",
-      options: statusOptions,
-    },
 
-    {
-      key: "asset",
-      label: "Asset ID",
-      type: "auto",
-      placeholder: "Auto Generated",
-    },
-    {
-      key: "serial_number",
-      label: "Serial Number",
-      type: "input",
-      placeholder: "Enter Serial Number",
-    },
-    {
-      key: "license_key",
-      label: "License Key",
-      type: "input",
-      placeholder: "Enter License Key",
-    },
-    {
-      key: "license_expiry",
-      label: "License Expiry",
-      type: "date-text",
-      placeholder: "DD/MM/YYYY",
-    },
-    {
-      key: "model_number",
-      label: "Model Number",
-      type: "input",
-      placeholder: "Enter Model Number",
-    },
-    {
-      key: "assigned_to",
-      label: "Assigned To",
-      type: "input",
-      placeholder: "Assigned To",
-    },
-    {
-      key: "version",
-      label: "Version",
-      type: "input",
-      placeholder: "Please Enter Version of asset",
-    },
-    {
-      key: "purchase_date",
-      label: "Purchase Date",
-      type: "date-text",
-      placeholder: "DD / MM / YYYY",
-    },
-    {
-      key: "warranty_expiry",
-      label: "Warranty Until",
-      type: "date-text",
-      placeholder: "DD / MM / YYYY",
-    },
-
-    // { key: "cost", label: "Cost", type: "number", placeholder: "0.00" },
-    // {
-    //   key: "reason",
-    //   label: "Reason/Comments",
-    //   type: "textarea",
-    //   placeholder: "Please provide details.......",
-    // },
-  ];
   // Render field based on type
   const renderField = ({ key, label, type, placeholder, options }) => {
     switch (type) {
@@ -748,7 +554,7 @@ const AddNewAsset = () => {
       type: asset.type || "",
       name: asset.name || "",
       model_number: asset.model_number || "",
-      serial_number: asset.serial_number || "",
+      serial_no: asset.serial_no || "",
       purchase_date: formatDateToDDMMYYYY(asset.purchase_date),
       license_key: asset.license_key || "",
       license_expiry: formatDateToDDMMYYYY(asset.license_expiry),
@@ -1053,8 +859,21 @@ const AddNewAsset = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Asset Type
                     </label>
-                    <select className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option>Hardware</option>
+
+                    <select
+                      value={formData.asset_type}
+                      onChange={(e) =>
+                        setFormData({ ...formData, asset_type: e.target.value })
+                      }
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Asset Types</option>
+                      {!isLoadingAssetType &&
+                        assetType?.map((assetTypes) => (
+                          <option key={assetTypes.id} value={assetTypes.name}>
+                            {assetTypes.name}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
@@ -1064,31 +883,33 @@ const AddNewAsset = () => {
                       Purchase Date
                     </label>
                     <input
-                      type="text"
-                      placeholder="DD / MM / YYYY"
+                      type="date"
+                      value={formData.purchase_date}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          purchase_date: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-
-                  {/* Category */}
-                  {/* <div>
-                    <label className="block text-sm font-medium text-gray-707 mb-1">
-                      Category
-                    </label>
-                    <select className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option>Select Category</option>
-                    </select>
-                  </div> */}
 
                   {/* Cost */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Cost
                     </label>
+
                     <input
                       type="number"
-                      step="0.1"
-                      min="0"
+                      value={formData.purchase_cost}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          purchase_cost: e.target.value,
+                        })
+                      }
                       placeholder="0.00"
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -1116,7 +937,14 @@ const AddNewAsset = () => {
                     </label>
                     <input
                       type="text"
+                      value={formData.product_name}
                       placeholder="Auto-generated"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          product_name: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1127,23 +955,36 @@ const AddNewAsset = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description/Notes
                   </label>
+
                   <textarea
-                    placeholder="Additional details about the asset......"
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={formData.configuration}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        configuration: e.target.value,
+                      })
+                    }
+                    placeholder="Additional details..."
                     rows="4"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
               <div className="flex w-full md:w-[55%] flex-col space-y-6">
                 {/* Right Column */}
                 <div className="space-y-6 w-full sm:gap-6 md:gap-0 flex md:flex-col sm:flex-row flex-col">
-                  {/* Asset ID */}
+                  {/* Model Number*/}
                   <div className="w-full">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Model Number
                     </label>
+
                     <input
                       type="text"
+                      value={formData.model_no}
+                      onChange={(e) =>
+                        setFormData({ ...formData, model_no: e.target.value })
+                      }
                       placeholder="Enter Model Number"
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -1155,8 +996,15 @@ const AddNewAsset = () => {
                       Warranty Until
                     </label>
                     <input
-                      type="text"
-                      placeholder="DD / MM / YYYY"
+                      required
+                      type="date"
+                      value={formData.warranty_expiry}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          warranty_expiry: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1170,6 +1018,14 @@ const AddNewAsset = () => {
                       multiple
                       className="hidden"
                       accept="image/*,video/*"
+                      onChange={(e) => {
+                        const pickedFiles = Array.from(e.target.files);
+                        setFormData({
+                          ...formData,
+                          images: pickedFiles,
+                        });
+                        toast.success("Image uploaded successfully!");
+                      }}
                     />
                     <div className="flex flex-col items-center">
                       <svg
@@ -1242,206 +1098,6 @@ const AddNewAsset = () => {
           </div>
         </form>
       </div>
-      {/* <div className="px-6">
-        <h1 className="mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
-          Existing Assets
-        </h1>
-
-        <div className="flex gap-4 items-center mt-4">
-        
-          <div className="relative flex-1 max-w-md">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="w-5 h-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search Assets....."
-              value={search}
-              onChange={handleSearchChange}
-              className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-600 placeholder-gray-400 
-                       focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                       transition-colors duration-200 bg-white"
-            />
-          </div>
-
-      
-
-          <CustomVDropdown
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            // onFocus={() => setActiveField(key)}
-            // onBlur={() => setActiveField("")}
-            options={assetTypeFilter}
-            placeholder={"All Type"}
-            // style={getFieldStyles(key).input}
-          />
-        
-        </div>
-      
-        <div className="overflow-x-auto my-6 md:mt-9">
-          <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
-            <table className="table-auto w-full min-w-max ">
-              <thead className="bg-[#000C63] text-white  font-medium">
-                <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Asset Image
-                  </th>
-                  <th className="sticky top-0 z-20  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Asset ID
-                  </th>
-
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Name
-                  </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Type
-                  </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Status
-                  </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Assigned To
-                  </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Purchase Date{" "}
-                  </th>
-                  <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {assetIsLoading ? (
-                  // 🔹 Show skeleton loaders while fetching
-                  [...Array(5)].map((_, index) => (
-                    <tr key={index} className="border-b border-gray-200">
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-20 w-20 mx-auto rounded-md" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-6 w-16 mx-auto" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-6 w-24 mx-auto" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-6 w-20 mx-auto" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-6 w-20 mx-auto" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-6 w-28 mx-auto" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <Skeleton className="h-6 w-24 mx-auto" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <div className="flex justify-center gap-2">
-                          <Skeleton className="h-10 w-20 rounded-full" />
-                          <Skeleton className="h-10 w-20 rounded-full" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : filteredAssets && filteredAssets?.length > 0 ? (
-                  // 🔹 Render actual data
-                  filteredAssets.map((item, index) => (
-                    <tr key={item.id} className="border-b border-gray-200">
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        {item.images?.[0]?.image ? (
-                          <img
-                            src={`${BASE_URL}${item.images[0].image}`}
-                            alt={item.name || "Asset image"}
-                            className="h-20 mx-auto"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center gap-2">
-                           
-                            <input
-                              ref={(el) =>
-                                (fileInputRefs.current[item.id] = el)
-                              }
-                              id={`file-input-${item.id}`}
-                              type="file"
-                              className="hidden"
-                              onChange={(e) =>
-                                handleUpload(item.id, e.target.files[0])
-                              }
-                            />
-
-                         
-                            <div className="flex items-center justify-center h-20 px-4 bg-gray-100 rounded-md">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  document
-                                    .getElementById(`file-input-${item.id}`)
-                                    .click();
-                                }}
-                                className="text-blue-600 cursor-pointer hover:underline hover:text-blue-800"
-                              >
-                                Upload Image
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        {item?.id}
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        {item?.name}
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        {item?.type}
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        <div className="flex justify-center">
-                          <StatusButton status={item?.status} />
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        {item?.assignedTo || "-"}
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        {item?.purchase_date}
-                      </td>
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            onClick={() => handelEditClick(item)}
-                            className="px-6 py-2 bg-[#794CFF] hover:bg-[#6938e6] text-white rounded-full text-base cursor-pointer roboto font-semibold transition"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => deleteAssetHandler(item.id)}
-                            className="px-6 py-2 bg-[#FFAB25] hover:bg-[#e6991f] text-white rounded-full text-base cursor-pointer roboto font-semibold transition"
-                          >
-                            Retire
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  // 🔹 No data state
-                  <tr>
-                    <td
-                      colSpan="8"
-                      className="text-center p-6 text-gray-500 roboto"
-                    >
-                      No assets found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div> */}
     </>
   );
 };

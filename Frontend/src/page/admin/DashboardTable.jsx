@@ -78,29 +78,7 @@ const DashboardTable = () => {
     }
   };
   //   console.log(activeTab);
-  const tableData = [
-    {
-      Department: "Engineering",
-      "Hardware Assets": 45,
-      "Software Licenses": 89,
-      "Under Repair": 3,
-      Available: 8,
-    },
-    {
-      Department: "Finance",
-      "Hardware Assets": 12,
-      "Software Licenses": 24,
-      "Under Repair": 1,
-      Available: 2,
-    },
-    {
-      Department: "HR",
-      "Hardware Assets": 8,
-      "Software Licenses": 16,
-      "Under Repair": 0,
-      Available: 3,
-    },
-  ];
+ 
   const redirectToAddAssets = () => {
     navigate("/addAssets");
   };

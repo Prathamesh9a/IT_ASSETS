@@ -12,70 +12,14 @@ import { useGetEmployeesQuery } from "@/store/api/employeeApi";
 import {
   useAssignAssetMutation,
   useGetAssetsQuery,
+  useGetAssetTypeQuery,
+  useGetAssignedListQuery,
 } from "@/store/api/assetsApi";
 import { toast } from "sonner";
-const tableData = [
-  {
-    id: "INV001",
-    type: "Laptop",
-    image: assetImage,
-    model: "MacBook Pro",
-    status: "Under Repair",
-    assignedTo: "Alice Johnson",
-    purchasedDate: "2023-06-10",
-    action: "Retire",
-  },
-  {
-    id: "INV002",
-    type: "Desktop",
-    image: assetImage,
-    model: "Dell OptiPlex",
-    status: "Assigned",
-    assignedTo: "Bob Smith",
-    purchasedDate: "2022-11-05",
-    action: "Edit",
-  },
-  {
-    id: "INV003",
-    type: "Monitor",
-    image: assetImage,
-    model: 'Samsung 24"',
-    status: "Under Repair",
-    assignedTo: "Charlie Brown",
-    purchasedDate: "2023-01-20",
-    action: "Edit",
-  },
-  {
-    id: "INV004",
-    type: "Printer",
-    image: assetImage,
-    model: "HP LaserJet",
-    status: "Assigned",
-    assignedTo: "Diana Prince",
-    purchasedDate: "2022-09-15",
-    action: "Retire",
-  },
-  {
-    id: "INV005",
-    type: "Tablet",
-    image: assetImage,
-    model: "iPad Pro",
-    status: "Under Repair",
-    assignedTo: "Ethan Hunt",
-    purchasedDate: "2023-03-12",
-  },
-  {
-    id: "INV006",
-    type: "Laptop",
-    image: assetImage,
-    model: "Lenovo ThinkPad",
-    status: "Assigned",
-    assignedTo: "Fiona Gallagher",
-    purchasedDate: "2022-12-01",
-  },
-  // Add more entries similarly...
-];
+import { useGetUsersQuery } from "@/store/api/userApi";
+
 const AssetsAssignmentManagement = () => {
+  const BASE_URL = import.meta.env.VITE_BASE_IMAGE_URL;
   // for use in customVdropdown
   const [activeField, setActiveField] = useState("");
   const [assingmentData, setAssignmentData] = useState({
@@ -84,7 +28,39 @@ const AssetsAssignmentManagement = () => {
   });
   const [selectedDepartment, setSelectedDepartment] = useState("");
   // const [selectedAsset, setSelectedAsset] = useState('');
+
   const [selectedAssetType, setSelectedAssetType] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState("");
+
+  const { data: assetType, isLoading: isLoadingAssetType } =
+    useGetAssetTypeQuery();
+  const { data: assetsList, isLoading: isLoadingAssetsList } =
+    useGetAssignedListQuery();
+  console.log("assetlist", assetsList);
+
+  const {
+    data: assetData,
+    isLoading: assetIsLoading,
+    error: assetError,
+    isSuccess: assetIsSuccess,
+  } = useGetAssetsQuery();
+
+  const filteredAssets =
+    assetData?.filter(
+      (asset) =>
+        asset.asset_type_name?.toLowerCase() ===
+          selectedAssetType?.toLowerCase() &&
+        asset.status?.toLowerCase() == "available"
+    ) || [];
+
+  console.log("assetname : ", assetData);
+  const {
+    data: userData,
+    isLoading: userIsLoading,
+    error: userError,
+    isSuccess: userIsSuccess,
+  } = useGetUsersQuery();
+  console.log("username : ", userData);
 
   const {
     data,
@@ -96,11 +72,7 @@ const AssetsAssignmentManagement = () => {
     isLoading: employeeIsLoading,
     isError: employeeIsError,
   } = useGetEmployeesQuery();
-  const {
-    data: assetType,
-    isLoading: assetIsLoading,
-    isError: assetIsError,
-  } = useGetCategoriesQuery();
+
   const {
     data: assetsData,
     isLoading: assetsDataIsLoading,
@@ -114,85 +86,47 @@ const AssetsAssignmentManagement = () => {
       isError: assignAssetIsError,
     },
   ] = useAssignAssetMutation();
-  // department data for customVdropdown
-  const departmentOptions = (data?.departments || []).map((dept) => ({
-    label: dept,
-    value: dept.toLowerCase(),
-  }));
-  // employee data for user dropdown (filtered by department)
-  const employeeOptions =
-    employeeData
-      ?.filter((emp) => emp?.user?.is_active) // only active users
-      ?.filter((emp) => {
-        if (!selectedDepartment) return true; // agar department select nahi hai toh sab dikhao
-        return (
-          emp?.department?.toLowerCase() === selectedDepartment?.toLowerCase()
-        );
-      })
-      .map((emp) => ({
-        value: emp.id, // employee id
-        label: `${emp.user.first_name} ${emp.user.last_name}`, // full name
-      })) || [];
-
-  // asset data for asset dropdown (filtered by asset type + available)
-  const assetOptions =
-    assetsData
-      ?.filter((asset) => asset?.status?.toLowerCase() === "available")
-      ?.filter((asset) => {
-        if (!selectedAssetType) return true; // agar asset type select nahi hai toh sab dikhao
-        return asset?.type?.toLowerCase() === selectedAssetType?.toLowerCase();
-      })
-      .map((asset) => ({
-        label: asset?.name || "Unnamed Asset",
-        value: asset?.id,
-      })) || [];
-
-  // asset type data for asset type dropdown
-  // const assetTypeOptions =
-  //   assetType?.asset_categories?.map((cat) => ({
-  //     label: cat,
-  //     value: cat,
-  //   })) || [];
-  const assetTypeOptions = [
-    {
-      label: "Hardware",
-      value: "hardware",
-    },
-    {
-      label: "Software",
-      value: "software",
-    },
-  ];
-  const getFieldStyles = (field) => ({
-    label: {
-      color: activeField === field ? "#2066FF" : "#6F7C8E",
-      fontWeight: "normal",
-    },
-    input: {
-      borderColor: activeField === field ? "#2066FF" : "#E1E1E1",
-    },
-  });
 
   // User Dropdown Functions
 
   const handleAssignAsset = async () => {
     try {
-      if (!assingmentData.asset_id || !assingmentData.employee_id) {
-        toast.error("Please select both asset and employee");
+      if (!selectedAssetType || !assingmentData.employee_id || !selectedAsset) {
+        toast.error("Please select asset type, user, and asset");
         return;
       }
 
-      const response = await assignAsset(assingmentData).unwrap();
+      // Find the selected asset type name
+      const selectedAssetTypeObj = assetType?.find(
+        (type) => type.name === selectedAssetType
+      );
+      const assetTypeName = selectedAssetTypeObj?.name;
 
+      // Find the selected asset ID
+      const selectedAssetObj = filteredAssets.find(
+        (asset) => asset.product_name === selectedAsset
+      );
+      const assetId = selectedAssetObj?.id;
+
+      // Prepare the data to send
+      const dataToSend = {
+        asset_type: assetTypeName, // Asset type name
+        employee_id: assingmentData.employee_id, // Employee ID from state
+        asset_id: assetId,
+      };
+
+      console.log("Payload:", dataToSend); // Debug: Check the payload before sending
+
+      const response = await assignAsset(dataToSend).unwrap();
       toast.success(response?.detail || "Asset assigned successfully");
 
-      // reset form
+      // Reset form
       setAssignmentData({
         asset_id: "",
         employee_id: "",
       });
-      setSelectedDepartment("");
       setSelectedAssetType("");
+      setSelectedAsset("");
     } catch (error) {
       console.error("Assign asset failed:", error);
       toast.error(error?.data?.message || "Failed to assign asset");
@@ -200,8 +134,8 @@ const AssetsAssignmentManagement = () => {
   };
 
   const handleReset = () => {
-    setSelectedDepartment("");
     setSelectedAssetType("");
+    setSelectedAsset("");
     setAssignmentData({
       asset_id: "",
       employee_id: "",
@@ -222,7 +156,7 @@ const AssetsAssignmentManagement = () => {
               {/* Left Column */}
               <div>
                 {/* Department Dropdown */}
-                <div className="relative w-full mb-6 ">
+                {/* <div className="relative w-full mb-6 ">
                   <label
                     htmlFor="id"
                     className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto"
@@ -245,15 +179,42 @@ const AssetsAssignmentManagement = () => {
                     onBlur={() => setActiveField(null)}
                     disableWhen={departmentIsLoading || departmentIsError}
                   />
+                </div> */}
+                {/* Asset Type Dropdown */}
+                <div className="relative w-full mb-6">
+                  <label
+                    htmlFor="assetType"
+                    className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto"
+                  >
+                    Asset Type
+                  </label>
+                  <select
+                    id="assetType"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedAssetType}
+                    onChange={(e) => {
+                      setSelectedAssetType(e.target.value);
+                      setSelectedAsset(""); // Reset selected asset when asset type changes
+                    }}
+                  >
+                    <option value="">Select Asset Type</option>
+                    {!isLoadingAssetType &&
+                      assetType?.map((type) => (
+                        <option key={type.id} value={type.name}>
+                          {type.name}
+                        </option>
+                      ))}
+                  </select>
                 </div>
+
                 {/* User Dropdown */}
                 <div
                   className="relative w-full mb-6 "
-                  onClick={() => {
-                    if (!selectedDepartment) {
-                      toast("Please select department first");
-                    }
-                  }}
+                  // onClick={() => {
+                  //   if (!selectedDepartment) {
+                  //     toast("Please select department first");
+                  //   }
+                  // }}
                 >
                   <label
                     htmlFor="id"
@@ -261,101 +222,53 @@ const AssetsAssignmentManagement = () => {
                   >
                     Select User
                   </label>
-                  <CustomVDropdown
-                    onChange={(e) =>
-                      setAssignmentData((prev) => ({
-                        ...prev,
-                        employee_id: e.target.value,
-                      }))
-                    }
+
+                  <select
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={assingmentData.employee_id}
-                    options={employeeOptions ?? []} // safe fallback
-                    placeholder={
-                      employeeIsLoading
-                        ? "Loading employee..."
-                        : employeeIsError
-                        ? "Failed to load employee"
-                        : "Select employee"
+                    onChange={(e) =>
+                      setAssignmentData({
+                        ...assingmentData,
+                        employee_id: e.target.value,
+                      })
                     }
-                    style={getFieldStyles("employee").input}
-                    onFocus={() => setActiveField("employee")}
-                    onBlur={() => setActiveField(null)}
-                    disableWhen={
-                      !selectedDepartment ||
-                      employeeIsLoading ||
-                      employeeIsError
-                    }
-                  />
+                  >
+                    <option value="">Select User</option>
+                    {!userIsLoading &&
+                      userData?.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.first_name} {user.last_name}
+                        </option>
+                      ))}
+                  </select>
                 </div>
               </div>
 
               {/* Right Column */}
               <div>
-                {/* Asset Type Dropdown */}
-                <div className="relative w-full mb-6 ">
-                  <label
-                    htmlFor="id"
-                    className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto"
-                  >
-                    Asset Type
-                  </label>
-                  <CustomVDropdown
-                    onChange={(e) => setSelectedAssetType(e.target.value)}
-                    value={selectedAssetType}
-                    options={assetTypeOptions ?? []} // safe fallback
-                    placeholder={
-                      assetIsLoading
-                        ? "Loading Asset type..."
-                        : assetIsError
-                        ? "Failed to load Asset type..."
-                        : "Select Asset type"
-                    }
-                    style={getFieldStyles("asset").input}
-                    onFocus={() => setActiveField("asset")}
-                    onBlur={() => setActiveField(null)}
-                    disableWhen={assetIsLoading || assetIsError}
-                  />
-                </div>
                 {/* Asset Dropdown */}
-                <div
-                  className="relative w-full mb-6 "
-                  onClick={() => {
-                    if (!selectedAssetType) {
-                      toast("Please first select asset type");
-                    }
-                  }}
-                >
+                <div className="relative w-full mb-6">
                   <label
-                    htmlFor="id"
+                    htmlFor="asset"
                     className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto"
                   >
                     Available Assets
                   </label>
-                  <CustomVDropdown
-                    onChange={(e) =>
-                      setAssignmentData((prev) => ({
-                        ...prev,
-                        asset_id: e.target.value,
-                      }))
-                    }
-                    value={assingmentData.asset_id}
-                    options={assetOptions ?? []} // safe fallback
-                    placeholder={
-                      assetsDataIsLoading
-                        ? "Loading Asset..."
-                        : assetsDataIsError
-                        ? "Failed to load Asset"
-                        : "Select Asset"
-                    }
-                    style={getFieldStyles("availableasset").input}
-                    onFocus={() => setActiveField("availableasset")}
-                    onBlur={() => setActiveField(null)}
-                    disableWhen={
-                      !selectedAssetType ||
-                      assetsDataIsLoading ||
-                      assetsDataIsError
-                    }
-                  />
+                  <select
+                    id="asset"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedAsset}
+                    onChange={(e) => setSelectedAsset(e.target.value)}
+                    disabled={!selectedAssetType}
+                  >
+                    <option value="">Select Asset</option>
+                    {!assetIsLoading &&
+                      filteredAssets.map((asset) => (
+                        <option key={asset.id} value={asset.product_name}>
+                          {asset.product_name}
+                        </option>
+                      ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -398,9 +311,7 @@ const AssetsAssignmentManagement = () => {
                   <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Assigned To
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
-                    Department
-                  </th>
+
                   <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Assigned Date
                   </th>
@@ -414,48 +325,62 @@ const AssetsAssignmentManagement = () => {
               </thead>
 
               <tbody>
-                {tableData.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-200">
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <img
-                        src={item.image || "https://placehold.co/100x100"}
-                        alt=""
-                        className="  h-20"
-                      />
-                    </td>
-                    <td className=" whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.id}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.type}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.model}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <div className="flex justify-center ">
-                        <StatusButton status={item.status} />
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.assignedTo}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      {item.purchasedDate}
-                    </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
-                      <div className="flex gap-2 justify-center">
-                        <button className="px-6 py-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
-                          Transfer
-                        </button>
+                {!isLoadingAssetsList &&
+                  assetsList?.map((item) => (
+                    <tr key={item.id} className="border-b border-gray-200">
+                      {/* Image */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        <img
+                          src={
+                            item.asset?.images?.[0]?.image
+                              ? `${BASE_URL}${item.asset?.images?.[0]?.image}`
+                              : "https://placehold.co/100x100"
+                          }
+                          alt="Asset"
+                          className="h-20"
+                        />
+                      </td>
 
-                        <button className="px-6 py-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
-                          Unassign
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Asset ID */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.asset?.id}
+                      </td>
+
+                      {/* Asset name */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.asset?.product_name}
+                      </td>
+                      {/* Assigned To */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.employee?.first_name} {item.employee?.last_name}
+                      </td>
+
+                      {/* Purchased/Assigned Date */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        {item.assigned_date}
+                      </td>
+
+                      {/* Status (your custom component) */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        <div className="flex justify-center ">
+                          <StatusButton status={item.status} />
+                        </div>
+                      </td>
+
+                      {/* Action buttons */}
+                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                        <div className="flex gap-2 justify-center">
+                          <button className="px-6 py-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                            Transfer
+                          </button>
+
+                          <button className="px-6 py-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                            Unassign
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
