@@ -41,9 +41,9 @@ const DashboardTable = () => {
   ];
   const cardName = [
     "Total Assets",
-    "Active Users",
-    "Requested Today",
-    "Department",
+    "Pending Requests",
+    "Assigned Assets",
+    "Under Maintenance",
   ];
   const tabs = [
     "Overview",
