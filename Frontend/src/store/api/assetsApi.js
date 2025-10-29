@@ -14,6 +14,10 @@ export const assetsApi = createApi({
       query: () => "/assets/assigned/list/",
       providesTags: ["Assets"],
     }),
+    getDashboardSummary: builder.query({
+      query: () => "/assets/dashboard/summary/",
+      providesTags: ["Assets"],
+    }),
     getAssetById: builder.query({
       query: (id) => `/assets/${id}/`,
       providesTags: ["Assets"],
@@ -176,6 +180,7 @@ export const assetsApi = createApi({
 export const {
   useGetAssetsQuery,
   useGetAssignedListQuery,
+  useGetDashboardSummaryQuery,
   useGetAssetByIdQuery,
   useGetAssetTypeQuery,
   useCreateAssetMutation,

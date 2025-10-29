@@ -119,13 +119,13 @@ const AdminDashboard = () => {
       setSelectedAction(null);
 
       // ✅ Success toast
-      toast.success(
-        response?.detail || `Request ${action}d successfully.`
-      );
+      toast.success(response?.detail || `Request ${action}d successfully.`);
     } catch (error) {
       console.error(error);
       // ❌ Error toast
-      toast.error(error?.data?.detail || "Something went wrong. Please try again.");
+      toast.error(
+        error?.data?.detail || "Something went wrong. Please try again."
+      );
     }
   };
 
@@ -234,7 +234,12 @@ const AdminDashboard = () => {
                     {pendingAssetsIsLoading ? (
                       // 🔹 Show skeleton loaders while fetching
                       [...Array(5)].map((_, index) => (
-                        <tr key={index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-gray-100' : ''}`}>
+                        <tr
+                          key={index}
+                          className={`border-b border-gray-200 ${
+                            index % 2 === 0 ? "bg-gray-100" : ""
+                          }`}
+                        >
                           <td className="p-3 text-center border-r-[1px] border-r-[#EAECF0]">
                             <Skeleton className="h-20 w-20 mx-auto rounded-md" />
                           </td>
@@ -267,23 +272,37 @@ const AdminDashboard = () => {
                     ) : pendingAssets && pendingAssets?.length > 0 ? (
                       // 🔹 Render actual data
                       pendingAssets.map((item, index) => (
-                        <tr key={item.id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-gray-100' : ''}`}>
+                        <tr
+                          key={item.id}
+                          className={`border-b border-gray-200 ${
+                            index % 2 === 0 ? "bg-gray-100" : ""
+                          }`}
+                        >
                           <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                            {item.asset?.images?.length > 0 && item.asset.images[0].image ? (
+                            {item.asset?.images?.length > 0 &&
+                            item.asset.images[0].image ? (
                               <img
-                                src={`${VITE_BASE_URL ? VITE_BASE_URL.replace("/api/v1/", "") : "http://127.0.0.1:8000"}${item.asset.images[0].image}`}
+                                src={`${
+                                  VITE_BASE_URL
+                                    ? VITE_BASE_URL.replace("/api/v1/", "")
+                                    : "http://127.0.0.1:8000"
+                                }${item.asset.images[0].image}`}
                                 alt={item.asset.product_name || "Asset image"}
                                 className="h-20 w-20 object-cover mx-auto rounded-md"
                               />
                             ) : (
-                              <span className="text-gray-500">{item.asset?.product_name || "No Image"}</span>
+                              <span className="text-gray-500">
+                                {item.asset?.product_name || "No Image"}
+                              </span>
                             )}
                           </td>
                           <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.id || "-"}
                           </td>
                           <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                            {(item.employee?.first_name || "") + " " + (item.employee?.last_name || "") || "-"}
+                            {(item.employee?.first_name || "") +
+                              " " +
+                              (item.employee?.last_name || "") || "-"}
                           </td>
                           <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.asset?.product_name || "-"}
@@ -295,7 +314,11 @@ const AdminDashboard = () => {
                             Pending
                           </td>
                           <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
-                            {item.assigned_date ? new Date(item.assigned_date).toLocaleDateString() : "-"}
+                            {item.assigned_date
+                              ? new Date(
+                                  item.assigned_date
+                                ).toLocaleDateString()
+                              : "-"}
                           </td>
                           <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
                             <div className="flex justify-center gap-2">
