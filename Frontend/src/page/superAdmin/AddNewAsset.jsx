@@ -871,7 +871,7 @@ const AddNewAsset = () => {
                       {!isLoadingAssetType &&
                         assetType?.map((assetTypes) => (
                           <option key={assetTypes.id} value={assetTypes.name}>
-                            {assetTypes.name}
+                            {assetTypes.name.toLowerCase()}
                           </option>
                         ))}
                     </select>
