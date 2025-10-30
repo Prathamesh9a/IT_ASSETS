@@ -1,20 +1,23 @@
 // 📂 src/pages/NotificationPage.jsx
-import Header from '@/components/Header'
-import Notification from '@/components/Notification'
-import React from 'react'
-import { useGetNotificationsQuery } from "@/store/api/notificationApi"
+import Header from "@/components/Header";
+import Notification from "@/components/Notification";
+import React from "react";
+import { useGetNotificationsQuery } from "@/store/api/notificationApi";
 
 const NotificationPage = () => {
-  const { data = [], isLoading } = useGetNotificationsQuery()
+  const { data = [], isLoading } = useGetNotificationsQuery();
 
   // Sirf unread notifications
-  const unreadNotifications = data.filter((item) => !item.is_read)
+  const unreadNotifications = data.filter((item) => !item.is_read);
 
   return (
-    <> 
-      <Header showNotification={false} great={"Notification Settings & History"} />
-      <div className='px-6 mt-20'>
-        <h1 className="mt-6 md:mt-5 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+    <>
+      <Header
+        showNotification={false}
+        great={"Notification Settings & History"}
+      />
+      <div className="px-6 mt-20">
+        <h1 className="mt-6 md:mt-5 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Recent Notification
         </h1>
 
@@ -38,9 +41,11 @@ const NotificationPage = () => {
           {/* ✅ No Notifications */}
           {!isLoading && unreadNotifications.length === 0 && (
             <div className="flex justify-center items-center min-h-[60vh]">
-  <p className="text-gray-500 font-medium roboto">No notifications found.</p>
-</div>
-          )} 
+              <p className="text-gray-500 font-medium roboto">
+                No notifications found.
+              </p>
+            </div>
+          )}
 
           {/* ✅ Notifications */}
           {!isLoading &&
@@ -60,7 +65,7 @@ const NotificationPage = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default NotificationPage
+export default NotificationPage;

@@ -146,7 +146,7 @@ const AssetsAssignmentManagement = () => {
     <>
       <Header great={"Asset Assignment Management"} />
       <div className="px-6 mt-22">
-        <h1 className=" mt-6 md:mt-5 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+        <h1 className=" mt-6 md:mt-5 roboto font-bold text-lg sm:text-xl md:text-2xl">
           {" "}
           Assign New Asset
         </h1>
@@ -291,7 +291,7 @@ const AssetsAssignmentManagement = () => {
             </div>
           </div>
         </div>
-        <h1 className=" roboto font-bold text-xl sm:text-[24px] md:text-[30px] mt-3">
+        <h1 className=" roboto font-bold text-lg sm:text-xl md:text-2xl mt-3">
           Current Assets Assigned
         </h1>
         <div className="overflow-x-auto my-6 md:mt-9">
@@ -299,27 +299,27 @@ const AssetsAssignmentManagement = () => {
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Asset Image
                   </th>
-                  <th className="sticky top-0 z-20  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20  bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Asset ID
                   </th>
 
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Asset Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Assigned To
                   </th>
 
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Assigned Date
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     status{" "}
                   </th>
-                  <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Action
                   </th>
                 </tr>
@@ -330,7 +330,7 @@ const AssetsAssignmentManagement = () => {
                   assetsList?.map((item) => (
                     <tr key={item.id} className="border-b border-gray-200">
                       {/* Image */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         <img
                           src={
                             item.asset?.images?.[0]?.image
@@ -343,39 +343,39 @@ const AssetsAssignmentManagement = () => {
                       </td>
 
                       {/* Asset ID */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.asset?.id}
                       </td>
 
                       {/* Asset name */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.asset?.product_name}
                       </td>
                       {/* Assigned To */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.employee?.first_name} {item.employee?.last_name}
                       </td>
 
                       {/* Purchased/Assigned Date */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.assigned_date}
                       </td>
 
                       {/* Status (your custom component) */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         <div className="flex justify-center ">
                           <StatusButton status={item.status} />
                         </div>
                       </td>
 
                       {/* Action buttons */}
-                      <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         <div className="flex gap-2 justify-center">
-                          <button className="px-6 py-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                          <button className="py-2.5 px-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
                             Transfer
                           </button>
 
-                          <button className="px-6 py-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                          <button className="py-2.5 px-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
                             Unassign
                           </button>
                         </div>

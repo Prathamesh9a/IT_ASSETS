@@ -164,7 +164,7 @@ const AdminDashboard = () => {
             <div className="flex gap-2 items-center justify-center mx-auto max-w-3xs mt-4">
               <button
                 onClick={() => handleSubmit()}
-                className="px-6 py-2 bg-[#9ACD68] hover:bg-[#7CB556] text-white rounded-full text-base cursor-pointer roboto font-semibold transition"
+                className="py-2.5 px-2 bg-[#9ACD68] hover:bg-[#7CB556] text-white rounded-full text-base cursor-pointer roboto font-semibold transition"
               >
                 {" "}
                 Submit{" "}
@@ -178,10 +178,10 @@ const AdminDashboard = () => {
         {activeTab === "Dashboard" && <DashboardTable />}
         {activeTab === "Pending Request" && (
           <div className="pendingRequest">
-            <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+            <h1 className=" mt-6 md:mt-6 roboto font-bold text-lg sm:text-xl md:text-2xl">
               System Overview
             </h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 mt-5 md:mt-6 border-b-[2px] border-b-[#E1E1E1] pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 mt-3  border-b-[2px] border-b-[#E1E1E1] pb-4">
               {Array.from({ length: 4 }).map((_, index) => {
                 const SvgIcon = svgMap[iconKeys[index]];
                 return (
@@ -195,37 +195,37 @@ const AdminDashboard = () => {
                 );
               })}
             </div>
-            <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+            <h1 className=" mt-6 md:mt-6 roboto font-bold text-lg sm:text-xl md:text-2xl">
               Recent Requests
             </h1>
 
-            <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1] my-6 md:mt-6">
+            <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1] my-3 md:mt-4">
               <div className="max-h-[400px] mx-auto md:max-h-[440px] overflow-y-auto border border-gray-200 rounded-lg">
                 <table className="w-full min-w-max overflow-x-auto">
                   <thead className="bg-[#000C63] text-white font-medium">
                     <tr>
-                      <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-2 roboto text-base   font-medium">
                         Asset Image
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                         Request ID
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-2 roboto text-base   font-medium">
                         User
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-2 roboto text-base   font-medium">
                         Asset Name
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                         Request Type
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                         Status
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-2 roboto text-base   font-medium">
                         Date
                       </th>
-                      <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                      <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-2 roboto text-base   font-medium">
                         Action
                       </th>
                     </tr>
@@ -278,7 +278,7 @@ const AdminDashboard = () => {
                             index % 2 === 0 ? "bg-gray-100" : ""
                           }`}
                         >
-                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.asset?.images?.length > 0 &&
                             item.asset.images[0].image ? (
                               <img
@@ -296,41 +296,41 @@ const AdminDashboard = () => {
                               </span>
                             )}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.id || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-start p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {(item.employee?.first_name || "") +
                               " " +
                               (item.employee?.last_name || "") || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-start p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.asset?.product_name || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.status || "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             Pending
                           </td>
-                          <td className="whitespace-nowrap text-start p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-start p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.assigned_date
                               ? new Date(
                                   item.assigned_date
                                 ).toLocaleDateString()
                               : "-"}
                           </td>
-                          <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                          <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                             <div className="flex justify-center gap-2">
                               <button
                                 onClick={() => handelClick(item, "approve")}
-                                className="px-6 py-2 bg-[#000C63] hover:bg-[#6938E4] text-white rounded-full text-base roboto font-semibold transition duration-200 min-w-[90px]"
+                                className="py-2.5 px-2 bg-[#000C63] hover:bg-[#6938E4] text-white rounded-full text-base roboto font-semibold transition duration-200 min-w-[90px]"
                               >
                                 Approve
                               </button>
                               <button
                                 onClick={() => handelClick(item, "reject")}
-                                className="px-6 py-2 bg-red-100 text-red-400 hover:bg-red-200 rounded-full text-base roboto font-semibold transition duration-200 min-w-[90px]"
+                                className="py-2.5 px-2 bg-red-100 text-red-400 hover:bg-red-200 rounded-full text-base roboto font-semibold transition duration-200 min-w-[90px]"
                               >
                                 Reject
                               </button>

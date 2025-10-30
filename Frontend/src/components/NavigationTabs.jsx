@@ -36,7 +36,10 @@ export default function ScrollTabs({ tabs, onTabChange }) {
   }, [activeTab, tabs]);
 
   return (
-    <div className="pt-8 border-b-[2px] border-[#E1E1E1]" style={{ position: "relative" }}>
+    <div
+      className="pt-5 border-b-[2px] border-[#E1E1E1]"
+      style={{ position: "relative" }}
+    >
       <nav
         ref={navRef}
         className="tabs-container"
@@ -44,8 +47,8 @@ export default function ScrollTabs({ tabs, onTabChange }) {
           position: "relative",
           overflowX: "auto",
           whiteSpace: "nowrap",
-          msOverflowStyle: "none", /* IE & Edge */
-          scrollbarWidth: "none", /* Firefox */
+          msOverflowStyle: "none" /* IE & Edge */,
+          scrollbarWidth: "none" /* Firefox */,
         }}
       >
         {tabs?.map((tab) => (
@@ -53,10 +56,12 @@ export default function ScrollTabs({ tabs, onTabChange }) {
             key={tab}
             ref={(el) => (tabsRef.current[tab] = el)}
             onClick={() => handleTabClick(tab)}
-            className={`tab-button ${activeTab === tab ? "active" : ""}`}
+            className={`tab-button py-2.5 px-2 ${
+              activeTab === tab ? "active" : ""
+            }`}
             style={{
               display: "inline-block",
-              padding: "0.5rem 1rem",
+              // padding: "0.5rem 1rem",
               fontSize: "1.25rem",
               fontFamily: "Roboto, sans-serif",
               fontWeight: 600,
@@ -76,9 +81,9 @@ export default function ScrollTabs({ tabs, onTabChange }) {
           style={{
             position: "absolute",
             bottom: 0,
-            zIndex:"10",
+            zIndex: "10",
             height: "3px",
-            borderRadius:"24px",
+            borderRadius: "24px",
             backgroundColor: "#000C63",
             left: underlineStyle.left || 0,
             width: underlineStyle.width || 0,

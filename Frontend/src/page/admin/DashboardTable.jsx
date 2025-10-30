@@ -158,10 +158,10 @@ const DashboardTable = () => {
         showNotification={true}
       />
       <div className=" ">
-        <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+        <h1 className=" mt-6 md:mt-6 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Assets
         </h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 mt-5 md:mt-6 border-b-[2px] border-b-[#E1E1E1] pb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 mt-3 border-b-[2px] border-b-[#E1E1E1] pb-4">
           {Array.from({ length: 4 }).map((_, index) => {
             const SvgIcon = svgMap[iconKeys[index]];
             return (
@@ -179,45 +179,45 @@ const DashboardTable = () => {
           Assets 
         </h1> */}
         {/* tabel */}
-        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-6 md:mt-6">
+        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-3 md:mt-4">
           <div className="max-h-[200px]  mx-auto md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
             <table className=" w-full min-w-max overflow-x-auto">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0]  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0]  bg-[#000C63] text-white text-center p-2 roboto text-base   font-medium">
                     Type Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Product Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Model Number
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Purchase Date
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Vendor Name
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Is AMC
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     AMC Start Date
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     AMC End Date
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     AMC Vender Name
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Warranty Expiry{" "}
                   </th>{" "}
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
                     Status
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base  rounded-tr-[12px] font-medium">
                     Configuration
                   </th>
                 </tr>
@@ -228,7 +228,7 @@ const DashboardTable = () => {
                   <tr key={item.id} className="border-b border-gray-200">
                     {/* asset_type_name */}
                     <td
-                      className="whitespace-nowrap text-start p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(item.id, "asset_type", item.asset_type)
                       }
@@ -249,7 +249,7 @@ const DashboardTable = () => {
 
                     {/* product_name */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -274,7 +274,7 @@ const DashboardTable = () => {
 
                     {/* model_no */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(item.id, "model_no", item.model_no)
                       }
@@ -295,7 +295,7 @@ const DashboardTable = () => {
 
                     {/* purchase_date */}
                     <td
-                      className="whitespace-nowrap text-start p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -321,7 +321,7 @@ const DashboardTable = () => {
 
                     {/* vendor */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(item.id, "vendor", item.vendor)
                       }
@@ -342,7 +342,7 @@ const DashboardTable = () => {
 
                     {/* is_amc */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={
                         () => handleCellClick(item.id, "is_amc", item.is_amc) // pass boolean here
                       }
@@ -370,7 +370,7 @@ const DashboardTable = () => {
 
                     {/* amc_start_date */}
                     <td
-                      className="whitespace-nowrap text-start p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -396,7 +396,7 @@ const DashboardTable = () => {
 
                     {/* amc_end_date */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -422,7 +422,7 @@ const DashboardTable = () => {
 
                     {/* amc_vendor */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -447,7 +447,7 @@ const DashboardTable = () => {
 
                     {/* warranty_expiry */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -473,7 +473,7 @@ const DashboardTable = () => {
 
                     {/* status */}
                     <td
-                      className="whitespace-nowrap text-center p-3 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(item.id, "status", item.status)
                       }
@@ -483,7 +483,7 @@ const DashboardTable = () => {
 
                     {/* configuration */}
                     <td
-                      className="whitespace-nowrap text-center p-3 text-base roboto font-normal cursor-pointer"
+                      className="whitespace-nowrap text-center p-2 text-base roboto font-normal cursor-pointer"
                       onClick={() =>
                         handleCellClick(
                           item.id,
@@ -511,13 +511,13 @@ const DashboardTable = () => {
             </table>
           </div>
         </div>
-        <h1 className=" roboto font-bold text-xl sm:text-[24px] md:text-[30px] ">
+        <h1 className=" roboto font-bold text-lg sm:text-xl md:text-2xl ">
           Quick Action
         </h1>
-        <div className="flex-wrap  flex gap-4 justify-self-start sm:justify-center sm:items-center my-3">
+        <div className="flex-wrap  flex gap-4 justify-self-start sm:justify-center sm:items-center my-2">
           <Button
             onClick={() => redirectToAddAssets()}
-            className="flex-shrink-0 min-w-[185px] rounded-full py-2.5 px-5 poppins-medium md:text-xl text-base text-white cursor-pointer bg-[#000C63] hover:bg-[#8A5CFF]"
+            className="flex-shrink-0 min-w-[170px] rounded-full py-2.5 px-2 poppins-medium  text-base text-white cursor-pointer bg-[#000C63] hover:bg-[#8A5CFF]"
           >
             Add new Assets
           </Button>
