@@ -170,8 +170,8 @@ const SystemAuditTrail = () => {
         userName={user?.role}
         showNotification={false}
       />
-      <div className="px-6 mt-12">
-        <NavigationTabs onTabChange={handleTabChange} tabs={tabs} />
+      <div className="px-6 mt-22">
+        {/* <NavigationTabs onTabChange={handleTabChange} tabs={tabs} /> */}
         <h1 className=" mt-4 md:mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Filters
         </h1>
