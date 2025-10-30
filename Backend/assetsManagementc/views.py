@@ -9,7 +9,7 @@ from .serializers import AssignAssetSerializer,MyPendingRequestSerializer
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from django.db.models import Q
+from django.db.models import Q 
 from .serializers import MyAssetSerializer,DashboardSummarySerializer
 from .models import Asset, AssetImage, AssetAssignment,AssetType
 from .serializers import  AssignedAssetListRowSerializer,AssetLogSerializer
@@ -19,7 +19,10 @@ from employeeManagement.permissions import IsAdmin,IsUser
 from employeeManagement.models import Employee
 from django.shortcuts import get_object_or_404
 from django.shortcuts import get_list_or_404
-
+from .models import Notification
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.contrib.auth import get_user_model
 import logging
 logger = logging.getLogger(__name__)
 
@@ -27,6 +30,109 @@ logger = logging.getLogger(__name__)
 def set_request_context(request):
     return
 
+
+def create_notification(to_user, message, asset=None, assignment=None):
+    try:
+        Notification.objects.create(
+            to_user=to_user,
+            message=message,
+            asset=asset,
+            assignment=assignment,
+        )
+    except Exception:
+        logger.warning("Failed to create notification", exc_info=True)
+
+notifications_list_example = openapi.Response(
+    description="List of notifications for the logged-in user",
+    examples={
+        "application/json": [
+            {
+                "id": 101,
+                "message": "Asset HP EliteBook 840 G10 has been assigned to you.",
+                "asset_name": "HP EliteBook 840 G10",
+                "asset_serial": "HP-840-7788",
+                "assignment": 55,
+                "created_at": "2025-10-23T11:10:45+05:30",
+                "is_read": False
+            },
+            {
+                "id": 102,
+                "message": "Ravi requested surrender for Dell OptiPlex 7010.",
+                "asset_name": "Dell OptiPlex 7010",
+                "asset_serial": "DOP1004",
+                "assignment": 57,
+                "created_at": "2025-10-23T11:12:10+05:30",
+                "is_read": False
+            }
+        ]
+    }
+)
+
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Get your notifications",
+    responses={200: notifications_list_example, 403: "Forbidden"},
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def list_notifications(request):
+    """
+    Both admin and normal user.
+
+    Return all notifications addressed to request.user.
+    Ordered by newest first.
+    """
+    set_request_context(request)
+
+    qs = (
+        Notification.objects
+        .filter(to_user=request.user)
+        .select_related("asset")
+        .order_by("-created_at")
+    )
+
+    from .serializers import NotificationSerializer
+    data = NotificationSerializer(qs, many=True).data
+
+    logger.info(f"Notifications fetched for {request.user}. Count={len(data)}")
+    return Response(data, status=status.HTTP_200_OK)        
+#-------------------------create and send notification---------
+def send_notification(to_user, message,  asset=None, assignment=None):
+    """
+    Creates a notification for the specified recipient.
+    
+    Parameters:
+    - to_user: User who will receive the notification
+    - message: Notification text to show
+    - asset: Optional Asset object
+    - assignment: Optional AssetAssignment object
+    - created_at: Time at which notification is created
+    """
+    try:
+        notification = Notification.objects.create(
+            to_user=to_user,
+            message=message,
+            asset=asset,
+            assignment=assignment,
+        )
+    except Exception:
+        logger.warning("Failed to create notification", exc_info=True)
+    # Real-time broadcast
+    channel_layer = get_channel_layer()
+    group_name = f"user_{to_user.id}"
+
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            'type': 'send_notification',
+            'message': message,
+            'created_at': notification.created_at,
+            'asset': asset.id if asset else None,
+            'assignment': assignment.id if assignment else None,
+        }
+    )
+
+    return notification
 
 # ---------- LIST EVERY ASSET (no filters, no pagination) ----------
 @swagger_auto_schema(
@@ -370,7 +476,7 @@ def assign_asset(request):
     asset.status = Asset.Status.ASSIGNED
     asset.save(update_fields=["status", "updated_at"])
 
-    # log action
+    # audit log
     try:
         AssetLog.objects.create(
             asset=asset,
@@ -382,6 +488,10 @@ def assign_asset(request):
     except Exception:
         logger.warning("AssetLog create failed for assignment", exc_info=True)
 
+    # notification to employee
+    assign_msg = f"Asset {asset.product_name} has been assigned to you by admin {request.user}"
+    
+    send_notification(employee, assign_msg,  asset=asset, assignment=assignment)
     logger.info(f"Asset {asset.id} assigned to employee {employee.id} by user {request.user}")
     return Response(
         {
@@ -489,7 +599,6 @@ revoke_success_example = openapi.Response(
     },
 )
 
-
 @swagger_auto_schema(
     method="post",
     operation_summary="Revoke asset from employee and mark it Available (Admin only)",
@@ -506,6 +615,7 @@ def revoke_asset(request):
     - Mark assignment.status = 'revoked'
     - Set returned_date = today
     - Mark the asset status back to Available
+    - Notify that employee
     """
     set_request_context(request)
 
@@ -517,11 +627,9 @@ def revoke_asset(request):
     employee_id = serializer.validated_data["employee_id"]
     note = serializer.validated_data.get("remarks", "").strip()
 
-    # 1. Get asset
     asset = get_object_or_404(Asset, id=asset_id)
     employee = get_object_or_404(Employee, id=employee_id)
 
-    # 2. Find active assignment for this employee and asset
     assignment = AssetAssignment.objects.filter(
         asset=asset,
         employee=employee,
@@ -534,11 +642,9 @@ def revoke_asset(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # 3. Set assignment.status = 'revoked'
     assignment.status = "revoked"
     assignment.returned_date = timezone.now().date()
 
-    # append revoke note to remarks
     if note:
         if assignment.remarks:
             assignment.remarks = f"{assignment.remarks}\nRevoked: {note}"
@@ -547,7 +653,6 @@ def revoke_asset(request):
 
     assignment.save(update_fields=["status", "returned_date", "remarks"])
 
-    # 4. Set asset.status = Available
     try:
         asset.status = Asset.Status.AVAILABLE
     except Exception:
@@ -555,9 +660,8 @@ def revoke_asset(request):
 
     asset.save(update_fields=["status", "updated_at"] if hasattr(asset, "updated_at") else ["status"])
 
-    # 5. Log it in AssetLog for audit
     try:
-        desc = f"Asset revoked from employee {employee.username}"
+        desc = f"Asset revoked from employee {employee.first_name or employee.id}"
         if note:
             desc = f"{desc}. Note: {note}"
 
@@ -571,8 +675,13 @@ def revoke_asset(request):
     except Exception:
         logger.warning("Failed to create AssetLog for revoke_asset", exc_info=True)
 
+    # notify employee
+    revoke_msg = f"Asset {asset.product_name} has been revoked from you by admin {request.user}."
+    send_notification(employee, revoke_msg,  asset=asset, assignment=assignment)
+
+
     logger.info(
-        f"Asset {asset.id} revoked from employee {employee.username} by admin {request.user}"
+        f"Asset {asset.id} revoked from employee {employee.id} by admin {request.user}"
     )
 
     return Response(
@@ -586,6 +695,7 @@ def revoke_asset(request):
         },
         status=status.HTTP_200_OK,
     )
+
 #----------------My Assets------------
 @swagger_auto_schema(
     method="get",
@@ -656,11 +766,10 @@ def request_assignment(request):
     except Asset.DoesNotExist:
         return Response({"detail": "Asset not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # 2. Get "employee" for this request
-    # You changed your code to treat the user as employee directly
+    # 2. employee = logged in user
     employee = request.user
 
-    # 3. Find the active assignment record for this asset and this user
+    # 3. Find active assignment record
     assignment = AssetAssignment.objects.filter(
         asset=asset,
         employee=employee,
@@ -674,22 +783,13 @@ def request_assignment(request):
         )
         return Response({"detail": "No active assignment found."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # 4. Update the AssetAssignment row so admin can see it in pending
-    # expected patterns:
-    # surrender_requested
-    # maintenance_requested
-    # renew_requested
-    # damaged_requested
-    # expired_requested
+    # 4. Update AssetAssignment with requested status
     assignment.status = requested_status
 
-    # optional: if your AssetAssignment model has requested_at field, set it
     if hasattr(assignment, "requested_at"):
         assignment.requested_at = timezone.now()
 
-    # optional: keep reason
     if hasattr(assignment, "remarks"):
-        # append reason to remarks instead of overwriting
         if reason:
             if assignment.remarks:
                 assignment.remarks = f"{assignment.remarks}\nUser request: {reason}"
@@ -698,7 +798,7 @@ def request_assignment(request):
 
     assignment.save()
 
-    # 5. Write audit into AssetLog for history
+    # 5. Write audit into AssetLog
     try:
         desc_parts = [f"Request: {requested_status.replace('_', ' ')}"]
         if reason:
@@ -715,7 +815,13 @@ def request_assignment(request):
     except Exception:
         logger.warning("Failed to write AssetLog for request_assignment", exc_info=True)
 
-    # 6. Log and respond
+    # 6. Notify all admins
+    admins = Employee.objects.filter(role=Employee.ADMIN).distinct()
+    request_type_clean = requested_status.replace("_", " ")
+    notify_msg = f"{employee.first_name} requested {request_type_clean} for {asset.product_name}."
+    for admin_user in admins:
+        send_notification(admin_user, notify_msg,  asset=asset, assignment=assignment)
+
     logger.info(
         f"Asset request: Asset {asset.id} {requested_status} by user {request.user}"
     )
@@ -729,7 +835,6 @@ def request_assignment(request):
         },
         status=status.HTTP_200_OK,
     )
-
 #----------pending request(admin will see all request of asset given by user)
 @swagger_auto_schema(
     method="get",
@@ -853,22 +958,21 @@ def approve_reject_request(request):
     action = serializer.validated_data["action"]
     reason = serializer.validated_data.get("reason", "").strip()
 
-    # Expect statuses like surrender_requested, transfer_requested, maintenance_requested, renew_requested, damaged_requested, expired_requested
+    # Expected current assignment.status like "surrender_requested"
     status_val = getattr(assignment, "status", "")
     if "_requested" not in status_val:
         return Response({"detail": "This assignment is not in a requested state."}, status=status.HTTP_400_BAD_REQUEST)
 
-    base = status_val.rsplit("_", 1)[0]  # surrender, transfer, maintenance, renew, damaged, expired
+    base = status_val.rsplit("_", 1)[0]  # surrender, maintenance, etc
 
     if action == "approve":
         new_status = f"{base}_approved"
         assignment.status = new_status
-        # optional timestamps if fields exist on your model
+
         if hasattr(assignment, "approved_at"):
             assignment.approved_at = timezone.now()
 
-        # optional business rules
-        # if surrender or transfer are approved, close current assignment and free the asset
+        # if surrender or transfer approved, free the asset
         if base in {"surrender", "transfer"}:
             if hasattr(assignment, "returned_date"):
                 assignment.returned_date = timezone.now().date()
@@ -892,6 +996,12 @@ def approve_reject_request(request):
         except Exception:
             logger.warning("AssetLog write failed for approve_reject_request", exc_info=True)
 
+        # notify employee
+        emp_user = assignment.employee
+        msg_emp = f"Your {base} request for {assignment.asset.product_name} was approved by admin {request.user}."
+        
+        send_notification(emp_user, msg_emp,  asset=assignment.asset, assignment=assignment)
+
         logger.info(f"Assignment {assignment.id} {new_status} by admin {request.user}")
         return Response(
             {
@@ -907,7 +1017,6 @@ def approve_reject_request(request):
     new_status = f"{base}_rejected"
     assignment.status = new_status
     if hasattr(assignment, "approved_at"):
-        # ensure not set on rejection
         assignment.approved_at = None
     assignment.save()
 
@@ -925,6 +1034,14 @@ def approve_reject_request(request):
     except Exception:
         logger.warning("AssetLog write failed for approve_reject_request (reject)", exc_info=True)
 
+    # notify employee
+    emp_user = assignment.employee
+    msg_emp = f"Your {base} request for {assignment.asset.product_name} was rejected  by admin {request.user}."
+    if reason:
+        msg_emp = f"{msg_emp} Reason: {reason}"
+    
+    send_notification(emp_user, msg_emp,  asset=assignment.asset, assignment=assignment)
+
     logger.info(f"Assignment {assignment.id} {new_status} by admin {request.user}")
     return Response(
         {
@@ -936,6 +1053,7 @@ def approve_reject_request(request):
         status=status.HTTP_200_OK,
     )
 
+#-----------------asset log api
 asset_log_list_example = openapi.Response(
     description="List of asset log entries with asset details and images",
     examples={

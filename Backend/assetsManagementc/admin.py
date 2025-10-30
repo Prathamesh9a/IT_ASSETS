@@ -1,5 +1,9 @@
 from django.contrib import admin
 from .models import AssetType, Asset, AssetAssignment, AssetLog, AssetImage
+from django.utils.html import format_html
+from django.utils.timezone import localtime
+
+from .models import Notification
 
 @admin.register(AssetType)
 class AssetTypeAdmin(admin.ModelAdmin):
@@ -56,3 +60,67 @@ class AssetLogAdmin(admin.ModelAdmin):
     date_hierarchy = "timestamp"
     ordering = ("-timestamp",)
     list_per_page = 50
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "to_user",
+        "asset_link",
+        "assignment_id",
+        "short_message",
+        "is_read",
+        "created_local",
+    )
+    list_filter = (
+        "is_read",
+        "created_at",
+    )
+    search_fields = (
+        "message",
+        "to_user__username",
+        "to_user__first_name",
+        "to_user__last_name",
+        "asset__product_name",
+        "asset__serial_no",
+        "assignment__id",
+    )
+    readonly_fields = (
+        "created_at",
+    )
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+    autocomplete_fields = (
+        "to_user",
+        "asset",
+        "assignment",
+    )
+    actions = ("mark_as_read", "mark_as_unread")
+
+    def short_message(self, obj):
+        return (obj.message[:80] + "…") if len(obj.message) > 80 else obj.message
+    short_message.short_description = "Message"
+
+    def created_local(self, obj):
+        return localtime(obj.created_at).strftime("%Y-%m-%d %H:%M:%S")
+    created_local.short_description = "Created At"
+
+    def assignment_id(self, obj):
+        return obj.assignment_id or "-"
+    assignment_id.short_description = "Assignment"
+
+    def asset_link(self, obj):
+        if obj.asset_id and hasattr(obj.asset, "product_name"):
+            return format_html("{} ({})", obj.asset.product_name, obj.asset.serial_no or "no-serial")
+        return "-"
+    asset_link.short_description = "Asset"
+
+    def mark_as_read(self, request, queryset):
+        updated = queryset.update(is_read=True)
+        self.message_user(request, f"Marked {updated} notification(s) as read.")
+    mark_as_read.short_description = "Mark selected as read"
+
+    def mark_as_unread(self, request, queryset):
+        updated = queryset.update(is_read=False)
+        self.message_user(request, f"Marked {updated} notification(s) as unread.")
+    mark_as_unread.short_description = "Mark selected as unread"    
