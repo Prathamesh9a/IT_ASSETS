@@ -201,7 +201,7 @@ const AssetsAssignmentManagement = () => {
                     {!isLoadingAssetType &&
                       assetType?.map((type) => (
                         <option key={type.id} value={type.name}>
-                          {type.name}
+                          {type.name.toLowerCase()}
                         </option>
                       ))}
                   </select>
@@ -237,7 +237,8 @@ const AssetsAssignmentManagement = () => {
                     {!userIsLoading &&
                       userData?.map((user) => (
                         <option key={user.id} value={user.id}>
-                          {user.first_name} {user.last_name}
+                          {user.first_name.toLowerCase()}{" "}
+                          {user.last_name.toLowerCase()}
                         </option>
                       ))}
                   </select>
@@ -265,7 +266,7 @@ const AssetsAssignmentManagement = () => {
                     {!assetIsLoading &&
                       filteredAssets.map((asset) => (
                         <option key={asset.id} value={asset.product_name}>
-                          {asset.product_name}
+                          {asset.product_name.toLowerCase()}
                         </option>
                       ))}
                   </select>

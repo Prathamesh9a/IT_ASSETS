@@ -232,6 +232,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLogoutServerMutation } from "@/store/api/authApi";
 import { useNavigate } from "react-router-dom";
+
 import { logout } from "@/store/Slice/authSlice";
 import { toast } from "sonner";
 import { useGetMeEmployeeQuery } from "@/store/api/employeeApi";
@@ -267,8 +268,15 @@ const Header = ({ great, showNotification, userName }) => {
 
   return (
     <div className="w-full fixed inset-0 z-[500] px-6 h-16 bg-white shadow-[0px_-5px_25px_0px_#00000040] flex items-center justify-between">
-      <div className="">
-        <img src={logo} className="object-contain h-10" alt="" />
+      <div className="cursor-pointer">
+        <img
+          src={logo}
+          className="object-contain h-10"
+          alt=""
+          onClick={() => {
+            navigate("/adminDashboard");
+          }}
+        />
       </div>
 
       <div className="flex items-center space-x-2">
