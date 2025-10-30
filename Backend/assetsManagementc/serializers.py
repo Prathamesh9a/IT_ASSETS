@@ -439,7 +439,7 @@ class LogAssetSerializer(serializers.ModelSerializer):
 
 class AssetLogSerializer(serializers.ModelSerializer):
     asset = LogAssetSerializer(read_only=True)
-
+    performed_by = serializers.SerializerMethodField()
     class Meta:
         model = AssetLog
         fields = [
@@ -449,6 +449,7 @@ class AssetLogSerializer(serializers.ModelSerializer):
             "action",
             "description",
             "timestamp",
+            "performed_by",
         ]
         read_only_fields = [
             "id",
@@ -458,6 +459,19 @@ class AssetLogSerializer(serializers.ModelSerializer):
             "description",
             "timestamp",
         ]        
+    
+    def get_performed_by(self, obj):
+        if not obj.performed_by:
+            return None
+
+        # Safely expose minimal identity
+        name = obj.performed_by.get_full_name() or obj.performed_by.username or None
+        email = getattr(obj.performed_by, "email", None)
+        return {
+            "id": obj.performed_by.id,
+            "name": name,
+            "email": email,
+        }
 
 class DashboardSummarySerializer(serializers.Serializer):
     pending_requests = serializers.IntegerField(read_only=True, help_text="Number of asset requests waiting for admin action")

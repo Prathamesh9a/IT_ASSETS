@@ -109,6 +109,7 @@ class AssetLog(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="logs")
     employee = models.CharField(max_length=50)
     action = models.CharField(max_length=50)
+    performed_by = models.ForeignKey(Employee,on_delete=models.CASCADE,null=True,blank=True)
     description = models.TextField(blank=True)
     timestamp = models.DateTimeField()
 

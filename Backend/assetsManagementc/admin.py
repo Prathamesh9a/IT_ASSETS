@@ -53,9 +53,9 @@ class AssetAssignmentAdmin(admin.ModelAdmin):
 
 @admin.register(AssetLog)
 class AssetLogAdmin(admin.ModelAdmin):
-    list_display = ("asset", "employee", "action", "timestamp")
-    list_filter = ("action",)
-    search_fields = ("asset__serial_no", "employee", "action", "description")
+    list_display = ("asset", "employee", "action", "timestamp","performed_by")
+    list_filter = ("action","performed_by__username")
+    search_fields = ("asset__serial_no", "employee", "action", "description","performed_by__username")
     raw_id_fields = ("asset",)
     date_hierarchy = "timestamp"
     ordering = ("-timestamp",)
