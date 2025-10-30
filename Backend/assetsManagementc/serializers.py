@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from employeeManagement.models import Employee
-from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment,AssetLog
+from .models import AssetType, Asset, AssetImage , Vendor, AssetAssignment,AssetLog,Notification
 from django.utils import timezone
 from django.db import transaction
 from .models import AssetType
@@ -464,3 +464,29 @@ class DashboardSummarySerializer(serializers.Serializer):
     total_assets = serializers.IntegerField(read_only=True, help_text="Total assets in the system")
     assigned_assets = serializers.IntegerField(read_only=True, help_text="Assets currently marked as Assigned")
     under_repair = serializers.IntegerField(read_only=True, help_text="Assets currently marked as In Repair")        
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    asset_name = serializers.CharField(source="asset.product_name", read_only=True, default=None)
+    asset_serial = serializers.CharField(source="asset.serial_no", read_only=True, default=None)
+
+    class Meta:
+        model = Notification
+        fields = [
+            "id",
+            "message",
+            "asset_name",
+            "asset_serial",
+            "assignment",
+            "created_at",
+            "is_read",
+        ]
+        read_only_fields = [
+            "id",
+            "message",
+            "asset_name",
+            "asset_serial",
+            "assignment",
+            "created_at",
+            "is_read",
+        ]    

@@ -1,7 +1,7 @@
 from django.db import models
 from employeeManagement.models import Vendor
 from employeeManagement.models import Employee
-
+from django.conf import settings
 class AssetType(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.CharField(max_length=255, blank=True)
@@ -118,3 +118,36 @@ class AssetLog(models.Model):
 
     def __str__(self):
         return f"{self.timestamp:%Y-%m-%d} {self.asset.serial_no} {self.action}"
+    
+class Notification(models.Model):
+    to_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    # simple text message the UI will show
+    message = models.TextField()
+    # optional context fields
+    asset = models.ForeignKey(
+        Asset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications"
+    )
+    assignment = models.ForeignKey(
+        AssetAssignment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "notification"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"To {self.to_user} | {self.message[:40]}"    
