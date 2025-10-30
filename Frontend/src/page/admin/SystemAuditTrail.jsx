@@ -164,7 +164,7 @@ const SystemAuditTrail = () => {
       />
       <div className="px-6 mt-12">
         <NavigationTabs onTabChange={handleTabChange} tabs={tabs} />
-        <h1 className=" mt-4 md:mt-4 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+        <h1 className=" mt-4 md:mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Filters
         </h1>
         {/* filters */}
@@ -267,7 +267,7 @@ const SystemAuditTrail = () => {
 
         {/* divider */}
         <div className="mt-6 w-full border-b-[2px] border-b-[#E1E1E1]" />
-        <h1 className=" mt-4 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+        <h1 className=" mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Audit Log
         </h1>
         <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-6 md:mt-6">
@@ -275,28 +275,28 @@ const SystemAuditTrail = () => {
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0]  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0]  bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Asset Image
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Timestamp
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Actor
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Asset
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Action
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Target User
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Status
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63]  text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63]  text-white text-center p-2 roboto text-base md:text-lg font-medium">
                     Remark
                   </th>
                 </tr>
@@ -305,33 +305,33 @@ const SystemAuditTrail = () => {
               <tbody>
                 {tableData?.map((item, index) => (
                   <tr key={index} className="border-b border-gray-200">
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0]  text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0]  text-base roboto font-normal">
                       <img src={item.image} alt="" className="h-20" />
                     </td>
-                    <td className=" whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                    <td className=" whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                       {item.Timestamp}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                       {item.actor}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                       {item.action}
                     </td>
-                    {/* <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                    {/* <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                       <div className="flex justify-center ">
                         <StatusButton status={item.status} />
                       </div>
                     </td> */}
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                       {item.asset}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                       {item.targetUser}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                       {item.status}
                     </td>
-                    <td className="whitespace-nowrap text-center p-3 text-base roboto font-normal">
+                    <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                       {item.Remark}
                     </td>
                   </tr>
@@ -344,7 +344,7 @@ const SystemAuditTrail = () => {
           Audit Log
         </h1> */}
         <CSVLink data={tableData} filename={"table-data.csv"}>
-          <Button className="bg-[#000C63] hover:bg-[#8A5CFF]  cursor-pointer px-6 py-3 mb-4 roboto font-medium md:text-xl text-base rounded-full">
+          <Button className="bg-[#000C63] hover:bg-[#8A5CFF]  cursor-pointer px-6 py-3 mb-4 roboto font-medium  text-base rounded-full">
             Export To CSV
           </Button>
         </CSVLink>

@@ -281,7 +281,7 @@ const Header = ({ great, showNotification, userName }) => {
 
       <div className="flex items-center space-x-2">
         {/* Greeting + Dept */}
-        <h1 className="hidden font-bold md:flex items-center gap-2 text-[18px] lg:text-[24px] text-black">
+        <h1 className="hidden font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-2xl text-black">
           {great} {userName}
           {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
@@ -325,7 +325,7 @@ const Header = ({ great, showNotification, userName }) => {
 
         {/* Username + Dropdown */}
         <div className="flex gap-2 items-center">
-          <h2 className="roboto font-normal text-xl lg:text-2xl truncate sm:block hidden">
+          <h2 className="roboto font-normal text-lg sm:text-xl md:text-2xl truncate sm:block hidden">
             {user?.username}
           </h2>
           <DropdownMenu>
