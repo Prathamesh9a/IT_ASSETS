@@ -376,10 +376,11 @@ def delete_assets(request):
                 desc = f"{desc}. Reason: {reason}"
             AssetLog.objects.create(
                 asset=asset,
-                employee=str(request.user),
+                employee=None,
                 action="Soft Delete",
                 description=desc,
                 timestamp=now,
+                performed_by=request.user,
             )
         except Exception:
             logger.warning("Failed to write AssetLog for soft delete", exc_info=True)
@@ -484,6 +485,7 @@ def assign_asset(request):
             action="Assigned",
             description=f"Assigned to employee ID {employee.id}",
             timestamp=timezone.now(),
+            performed_by=request.user,
         )
     except Exception:
         logger.warning("AssetLog create failed for assignment", exc_info=True)
@@ -671,6 +673,7 @@ def revoke_asset(request):
             action="Revoked",
             description=desc,
             timestamp=timezone.now(),
+            performed_by=request.user,
         )
     except Exception:
         logger.warning("Failed to create AssetLog for revoke_asset", exc_info=True)
@@ -811,6 +814,7 @@ def request_assignment(request):
             action="Request",
             description=description,
             timestamp=timezone.now(),
+            performed_by=request.user,
         )
     except Exception:
         logger.warning("Failed to write AssetLog for request_assignment", exc_info=True)
@@ -992,6 +996,7 @@ def approve_reject_request(request):
                 action="Request Approved",
                 description=f"{base} approved",
                 timestamp=timezone.now(),
+                performed_by=request.user,
             )
         except Exception:
             logger.warning("AssetLog write failed for approve_reject_request", exc_info=True)
@@ -1030,6 +1035,7 @@ def approve_reject_request(request):
             action="Request Rejected",
             description=desc,
             timestamp=timezone.now(),
+            performed_by=request.user,
         )
     except Exception:
         logger.warning("AssetLog write failed for approve_reject_request (reject)", exc_info=True)
@@ -1126,6 +1132,7 @@ asset_log_list_example = openapi.Response(
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsAdmin])
 def list_asset_log(request):
+
     """
     Admin view.
 
@@ -1143,7 +1150,7 @@ def list_asset_log(request):
 
     logs = (
         AssetLog.objects
-        .select_related("asset", "asset__asset_type", "asset__vendor")
+        .select_related("asset", "asset__asset_type", "asset__vendor", "performed_by")
         .prefetch_related("asset__images")
         .order_by("-timestamp")
     )
@@ -1152,6 +1159,7 @@ def list_asset_log(request):
     logger.info(f"Asset log fetched by {request.user}. Count={len(data)}")
 
     return Response(data, status=status.HTTP_200_OK)
+
 
 dashboard_example_response = openapi.Response(
     description="Dashboard summary numbers for admin",
