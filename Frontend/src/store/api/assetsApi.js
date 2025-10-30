@@ -26,6 +26,10 @@ export const assetsApi = createApi({
       query: () => `/assets/asset-types/`,
       providesTags: ["Assets"],
     }),
+    getAssetLogs: builder.query({
+      query: () => `/assets/assets/logs/`,
+      providesTags: ["Assets"],
+    }),
 
     createAsset: builder.mutation({
       query: (body) => ({
@@ -183,6 +187,7 @@ export const {
   useGetDashboardSummaryQuery,
   useGetAssetByIdQuery,
   useGetAssetTypeQuery,
+  useGetAssetLogsQuery,
   useCreateAssetMutation,
   useCreateAssetByFormMutation,
   useUpdateAssetMutation,

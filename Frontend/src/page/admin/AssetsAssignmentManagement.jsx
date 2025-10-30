@@ -326,62 +326,78 @@ const AssetsAssignmentManagement = () => {
               </thead>
 
               <tbody>
-                {!isLoadingAssetsList &&
-                  assetsList?.map((item) => (
-                    <tr key={item.id} className="border-b border-gray-200">
-                      {/* Image */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        <img
-                          src={
-                            item.asset?.images?.[0]?.image
-                              ? `${BASE_URL}${item.asset?.images?.[0]?.image}`
-                              : "https://placehold.co/100x100"
-                          }
-                          alt="Asset"
-                          className="h-20"
-                        />
-                      </td>
+                {!isLoadingAssetsList && assetsList?.length > 0
+                  ? assetsList.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className={`border-b border-gray-200 ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-100"
+                        }`}
+                      >
+                        {/* Image */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          <img
+                            src={
+                              item.asset?.images?.[0]?.image
+                                ? `${BASE_URL}${item.asset?.images?.[0]?.image}`
+                                : "https://placehold.co/100x100"
+                            }
+                            alt="Asset"
+                            className="h-20"
+                          />
+                        </td>
 
-                      {/* Asset ID */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        {item.asset?.id}
-                      </td>
+                        {/* Asset ID */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          {item.asset?.id}
+                        </td>
 
-                      {/* Asset name */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        {item.asset?.product_name}
-                      </td>
-                      {/* Assigned To */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        {item.employee?.first_name} {item.employee?.last_name}
-                      </td>
+                        {/* Asset name */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          {item.asset?.product_name}
+                        </td>
 
-                      {/* Purchased/Assigned Date */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        {item.assigned_date}
-                      </td>
+                        {/* Assigned To */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          {item.employee?.first_name} {item.employee?.last_name}
+                        </td>
 
-                      {/* Status (your custom component) */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        <div className="flex justify-center ">
-                          <StatusButton status={item.status} />
-                        </div>
-                      </td>
+                        {/* Assigned Date */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          {item.assigned_date}
+                        </td>
 
-                      {/* Action buttons */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
-                        <div className="flex gap-2 justify-center">
-                          <button className="py-2.5 px-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
-                            Transfer
-                          </button>
+                        {/* Status */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          <div className="flex justify-center ">
+                            <StatusButton status={item.status} />
+                          </div>
+                        </td>
 
-                          <button className="py-2.5 px-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
-                            Unassign
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        {/* Actions */}
+                        <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                          <div className="flex gap-2 justify-center">
+                            <button className="py-2 px-6 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                              Transfer
+                            </button>
+
+                            <button className="py-2 px-6 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                              Unassign
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  : !isLoadingAssetsList && (
+                      <tr>
+                        <td
+                          colSpan="7"
+                          className="text-center p-6 text-gray-500 roboto text-base bg-gray-50"
+                        >
+                          No pending requests found.
+                        </td>
+                      </tr>
+                    )}
               </tbody>
             </table>
           </div>

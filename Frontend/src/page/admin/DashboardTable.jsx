@@ -224,12 +224,17 @@ const DashboardTable = () => {
               </thead>
 
               <tbody>
-                {data?.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-200">
+                {data?.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className={`border-b border-gray-200 ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-300"
+                    }`}
+                  >
                     {/* asset_type_name */}
                     <td
                       className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(item.id, "asset_type", item.asset_type)
                       }
                     >
@@ -240,6 +245,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -250,7 +261,7 @@ const DashboardTable = () => {
                     {/* product_name */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "product_name",
@@ -265,6 +276,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -275,7 +292,7 @@ const DashboardTable = () => {
                     {/* model_no */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(item.id, "model_no", item.model_no)
                       }
                     >
@@ -286,6 +303,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -296,7 +319,7 @@ const DashboardTable = () => {
                     {/* purchase_date */}
                     <td
                       className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "purchase_date",
@@ -312,6 +335,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -322,7 +351,7 @@ const DashboardTable = () => {
                     {/* vendor */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(item.id, "vendor", item.vendor)
                       }
                     >
@@ -333,6 +362,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -343,7 +378,7 @@ const DashboardTable = () => {
                     {/* is_amc */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={
+                      onDoubleClick={
                         () => handleCellClick(item.id, "is_amc", item.is_amc) // pass boolean here
                       }
                     >
@@ -371,7 +406,7 @@ const DashboardTable = () => {
                     {/* amc_start_date */}
                     <td
                       className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "amc_start_date",
@@ -387,6 +422,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -397,7 +438,7 @@ const DashboardTable = () => {
                     {/* amc_end_date */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "amc_end_date",
@@ -413,6 +454,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -423,7 +470,7 @@ const DashboardTable = () => {
                     {/* amc_vendor */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "amc_vendor",
@@ -438,6 +485,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -448,7 +501,7 @@ const DashboardTable = () => {
                     {/* warranty_expiry */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "warranty_expiry",
@@ -464,6 +517,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
@@ -474,7 +533,7 @@ const DashboardTable = () => {
                     {/* status */}
                     <td
                       className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(item.id, "status", item.status)
                       }
                     >
@@ -484,7 +543,7 @@ const DashboardTable = () => {
                     {/* configuration */}
                     <td
                       className="whitespace-nowrap text-center p-2 text-base roboto font-normal cursor-pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         handleCellClick(
                           item.id,
                           "configuration",
@@ -499,6 +558,12 @@ const DashboardTable = () => {
                           autoFocus
                           onChange={(e) => setTempValue(e.target.value)}
                           onBlur={() => handleBlur(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleBlur(item);
+                            }
+                          }}
                           className="border rounded p-1 w-full text-black"
                         />
                       ) : (
