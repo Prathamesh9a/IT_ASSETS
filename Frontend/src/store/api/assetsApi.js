@@ -1,3 +1,4 @@
+// src/store/api/assetsApi.js
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./baseQueryWithReauth";
 
@@ -40,7 +41,7 @@ export const assetsApi = createApi({
       query: ({ id, data }) => ({
         url: `/assets/${id}/`,
         method: "PATCH",
-        body: data, // ← MUST pass FormData
+        body: data,
       }),
       invalidatesTags: ["Assets"],
     }),
@@ -87,25 +88,14 @@ export const assetsApi = createApi({
     createAssetByForm: builder.mutation({
       query: (assetData) => {
         const formData = new FormData();
-
         Object.entries(assetData).forEach(([key, value]) => {
-          if (
-            value !== null &&
-            value !== undefined &&
-            value !== "" &&
-            key !== "images"
-          ) {
+          if (value !== null && value !== undefined && value !== "" && key !== "images") {
             formData.append(key, value);
           }
         });
-
-        // Handle multiple image/video files
         if (assetData.images && Array.isArray(assetData.images)) {
-          assetData.images.forEach((file) => {
-            formData.append("images", file);
-          });
+          assetData.images.forEach((file) => formData.append("images", file));
         }
-
         return {
           url: "/assets/create/",
           method: "POST",
@@ -168,11 +158,19 @@ export const assetsApi = createApi({
       }),
       invalidatesTags: ["Assets"],
     }),
-
-    // NEW: Get Pending Requests for Current User
     getPendingRequests: builder.query({
       query: () => "/assets/assets/requests/pending/user/",
       providesTags: ["Assets"],
+    }),
+
+    // NEW: Revoke (Unassign) Asset
+    revokeAsset: builder.mutation({
+      query: (data) => ({
+        url: "/assets/revoke/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Assets"],
     }),
   }),
 });
@@ -199,5 +197,6 @@ export const {
   useImportAssetsMutation,
   useGetPendingAssetsQuery,
   useDecideAssetRequestMutation,
-  useGetPendingRequestsQuery, // Export new hook
+  useGetPendingRequestsQuery,
+  useRevokeAssetMutation, // NEW HOOK
 } = assetsApi;
