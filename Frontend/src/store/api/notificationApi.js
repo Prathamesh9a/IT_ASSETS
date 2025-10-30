@@ -1,17 +1,15 @@
+// src/store/api/notificationApi.js
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./baseQueryWithReauth";
 
 export const notificationApi = createApi({
   reducerPath: "notificationApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Notifications"], // enable caching with tags
+  tagTypes: ["Notifications"],
   endpoints: (builder) => ({
-    // GET /notifications/
+    // GET /api/v1/assets/notifications/
     getNotifications: builder.query({
-      query: () => ({
-        url: "/notifications/",
-        method: "GET",  
-      }),
+      query: () => "/assets/notifications/",
       providesTags: (result) =>
         result
           ? [
@@ -21,19 +19,15 @@ export const notificationApi = createApi({
           : [{ type: "Notifications", id: "LIST" }],
     }),
 
-    // POST /notifications/mark-all-read/
+    // POST /api/v1/assets/notifications/mark-all-read/
     markAllRead: builder.mutation({
       query: () => ({
-        url: "/notifications/mark-all-read/",
+        url: "/assets/notifications/mark-all-read/",
         method: "POST",
       }),
-      invalidatesTags: [{ type: "Notifications", id: "LIST" }], // refetch list after marking all read
+      invalidatesTags: [{ type: "Notifications", id: "LIST" }],
     }),
   }),
 });
 
-// Export hooks
-export const {
-  useGetNotificationsQuery,
-  useMarkAllReadMutation,
-} = notificationApi;
+export const { useGetNotificationsQuery, useMarkAllReadMutation } = notificationApi;
