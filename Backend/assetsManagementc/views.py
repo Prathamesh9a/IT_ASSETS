@@ -187,10 +187,26 @@ def asset_create(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     asset = serializer.save()
+    
 
     files = request.FILES.getlist("images")
     if files:
         AssetImage.objects.bulk_create([AssetImage(asset=asset, image=f) for f in files])
+    # audit log for creation by admin
+    try:
+        
+        actor_label = getattr(request.user, "username", None) or getattr(request.user, "email", None) or "system"
+        AssetLog.objects.create(
+            asset=asset,
+            employee=str(actor_label),
+            action="Created",
+            description="Asset created",
+            timestamp=timezone.now(),
+            performed_by=request.user,
+        )
+    except Exception:
+        logger.warning("AssetLog create failed for asset creation", exc_info=True)
+
 
     out = AssetSerializer(asset).data
     return Response(out, status=status.HTTP_201_CREATED)
@@ -239,11 +255,26 @@ def asset_update(request, pk: int):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     asset = serializer.save()
-
     # add images (keeps existing ones)
     files = request.FILES.getlist("images")
     if files:
         AssetImage.objects.bulk_create([AssetImage(asset=asset, image=f) for f in files])
+    
+    # audit log for creation by admin
+    try:
+        
+        actor_label = getattr(request.user, "username", None) or getattr(request.user, "email", None) or "system"
+        AssetLog.objects.create(
+            asset=asset,
+            employee=str(actor_label),
+            action="updated",
+            description="Asset created",
+            timestamp=timezone.now(),
+            performed_by=request.user,
+        )
+    except Exception:
+        logger.warning("AssetLog create failed for asset creation", exc_info=True)
+
 
     out = AssetSerializer(asset, context={"request": request}).data
     logger.info(f"Asset {asset.id} updated by user {request.user}")
