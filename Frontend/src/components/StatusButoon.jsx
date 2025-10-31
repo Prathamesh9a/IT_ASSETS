@@ -43,7 +43,7 @@ const { text, bg, dot } = styles[status.toLowerCase()] || {
   return (
     <button
       style={{ backgroundColor: bg, color: text }}
-      className="flex items-center gap-2 px-4 py-1 text-sm rounded-full roboto font-normal"
+      className="flex items-center gap-2 px-4 py-2 text-sm rounded-full roboto font-normal"
     >
       <span
         style={{ backgroundColor: dot }}

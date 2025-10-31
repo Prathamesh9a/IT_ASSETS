@@ -692,7 +692,7 @@ const AddEmployee = () => {
           {/* Custom Dropdown Arrow */}
         </div>
         {/* tabel */}
-        <div className="overflow-x-auto my-6 md:mt-9">
+        <div className="overflow-x-auto my-6 md:mt-7">
           <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
             <table className="table-auto w-full min-w-max ">
               <thead className="bg-[#000C63] text-white  font-medium">

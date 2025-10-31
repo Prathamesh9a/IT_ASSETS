@@ -278,7 +278,7 @@ const AssetsAssignmentManagement = () => {
             <div className="flex gap-4">
               <button
                 onClick={handleAssignAsset}
-                className="px-7 py-2 bg-[#000C63] hover:bg-[#8A5CFF] cursor-pointer poppins-medium text-white font-medium rounded-full transition-colors duration-200"
+                className="px-7 py-2 bg-[#000C63] hover:bg-gradient-to-r hover:from-[#000C63] hover:to-[#3B82F6] hover:scale-105 transition-all duration-200 cursor-pointer poppins-medium text-white font-medium rounded-full"
               >
                 Assign Asset
               </button>
@@ -294,32 +294,32 @@ const AssetsAssignmentManagement = () => {
         <h1 className=" roboto font-bold text-lg sm:text-xl md:text-2xl mt-3">
           Current Assets Assigned
         </h1>
-        <div className="overflow-x-auto my-6 md:mt-9">
+        <div className="overflow-x-auto my-6 md:mt-7">
           <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Asset Image
                   </th>
-                  <th className="sticky top-0 z-20  bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Asset ID
                   </th>
 
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Asset Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Assigned To
                   </th>
 
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Assigned Date
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     status{" "}
                   </th>
-                  <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-2 roboto text-base md:text-lg font-medium">
+                  <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Action
                   </th>
                 </tr>
@@ -369,13 +369,13 @@ const AssetsAssignmentManagement = () => {
                       </td>
 
                       {/* Action buttons */}
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                      <td className="whitespace-nowrap text-center py-2 text-base roboto font-normal">
                         <div className="flex gap-2 justify-center">
-                          <button className="py-2.5 px-2 bg-[#000C63] hover:bg-[#8A5CFF] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                          <button className="py-1.5 px-4 bg-[#000C63] hover:bg-[#2563eb] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
                             Transfer
                           </button>
 
-                          <button className="py-2.5 px-2 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                          <button className="py-1.5 px-4 bg-[#F45E60] hover:bg-[#d94b4c] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
                             Unassign
                           </button>
                         </div>

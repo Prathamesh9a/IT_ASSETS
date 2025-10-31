@@ -4,17 +4,17 @@ import { Skeleton } from "./ui/skeleton";
 
 const Card = ({ SvgIcon, name, count, isLoading }) => {
   return (
-    <div className="bg-white relative overflow-hidden p-2 h-[80px] border border-[#c1c1c1c2] rounded-[10px] shadow-xl">
+    <div className="bg-white relative overflow-hidden p-2 h-[110px] border border-[#c1c1c1c2] rounded-[10px] shadow-xl">
       {/* Background ellipse image */}
       <img
         src={ellipse}
         alt="ellipse"
-        className="absolute top-0 right-0 w-[50px] object-contain h-auto pointer-events-none"
+        className="absolute top-0 right-0 w-[60px] object-contain h-auto pointer-events-none"
       />
 
       {/* SVG over ellipse */}
       {SvgIcon && (
-        <div className="absolute top-[20px] right-[20px] z-10">
+        <div className="absolute top-[8px] right-[8px] z-10">
           <SvgIcon className="w-8 h-8 text-gray-700" />
         </div>
       )}

@@ -204,28 +204,28 @@ const AdminDashboard = () => {
                 <table className="w-full min-w-max overflow-x-auto">
                   <thead className="bg-[#000C63] text-white font-medium">
                     <tr>
-                      <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base   font-medium">
                         Asset Image
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base   font-medium">
                         Request ID
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base   font-medium">
                         User
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base   font-medium">
                         Asset Name
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base   font-medium">
                         Request Type
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base   font-medium">
                         Status
                       </th>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-start p-3 roboto text-base   font-medium">
                         Date
                       </th>
-                      <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-2 roboto text-base   font-medium">
+                      <th className="sticky top-0 z-20 rounded-tr-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base   font-medium">
                         Action
                       </th>
                     </tr>

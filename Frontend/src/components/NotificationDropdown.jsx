@@ -40,7 +40,7 @@ const { data = [], isLoading,refetch } = useGetNotificationsQuery(undefined,{
           <div className="relative rounded-full cursor-pointer">
             {/* Bell SVG */}
             <svg
-              className="cursor-pointer w-7 h-7"
+              className="cursor-pointer w-6 h-6"
               viewBox="0 0 25 32"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
