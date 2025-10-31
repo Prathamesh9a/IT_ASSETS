@@ -49,7 +49,9 @@ export default function ScrollTabs({ tabs, onTabChange }) {
           whiteSpace: "nowrap",
           msOverflowStyle: "none" /* IE & Edge */,
           scrollbarWidth: "none" /* Firefox */,
-        }}
+          display: "flex",
+          gap: "clamp(1rem, 6vw, 4rem)", // Responsive gap
+          }}
       >
         {tabs?.map((tab) => (
           <button
@@ -82,8 +84,8 @@ export default function ScrollTabs({ tabs, onTabChange }) {
             position: "absolute",
             bottom: 0,
             zIndex: "10",
-            height: "3px",
-            borderRadius: "24px",
+            height: "5px",
+            borderRadius: "30px",
             backgroundColor: "#000C63",
             left: underlineStyle.left || 0,
             width: underlineStyle.width || 0,

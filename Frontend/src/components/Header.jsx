@@ -300,7 +300,7 @@ const Header = ({ great, showNotification, userName }) => {
       </div>
       <div className="flex items-center space-x-2">
         {/* Greeting + Dept */}
-        <h1 className="hidden font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-2xl text-black">
+        <h1 className="hidden  font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-xl text-black">
           {great}, {capitalizeName(getProfileData?.name)}
           {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
@@ -315,8 +315,8 @@ const Header = ({ great, showNotification, userName }) => {
         <svg
           onClick={logoutHandler}
           className="cursor-pointer"
-          width="26"
-          height="26"
+          width="20"
+          height="20"
           viewBox="0 0 26 26"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -346,10 +346,11 @@ const Header = ({ great, showNotification, userName }) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <svg
-                width="17"
-                height="10"
+                width="15"
+                height="8"
                 viewBox="0 0 17 10"
                 fill="none"
+                className="cursor-pointer"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
