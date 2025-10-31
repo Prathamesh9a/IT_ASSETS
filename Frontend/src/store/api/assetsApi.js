@@ -93,7 +93,12 @@ export const assetsApi = createApi({
       query: (assetData) => {
         const formData = new FormData();
         Object.entries(assetData).forEach(([key, value]) => {
-          if (value !== null && value !== undefined && value !== "" && key !== "images") {
+          if (
+            value !== null &&
+            value !== undefined &&
+            value !== "" &&
+            key !== "images"
+          ) {
             formData.append(key, value);
           }
         });

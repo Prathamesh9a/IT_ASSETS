@@ -12,14 +12,14 @@ export const authApi = createApi({
     getProfile: builder.query({
       query: () => "/auth/me/",
     }),
-      ssoLogin: builder.mutation({
+    ssoLogin: builder.mutation({
       query: (body) => ({
         url: "/auth/sso-login/",
         method: "POST",
         body,
       }),
     }),
-     logoutServer: builder.mutation({
+    logoutServer: builder.mutation({
       query: () => ({
         url: "/auth/logout/",
         method: "POST", // tu ne bola yaha POST hai
@@ -29,4 +29,10 @@ export const authApi = createApi({
   }),
 });
 
-export const { useLoginMutation,useSsoLoginMutation, useGetProfileQuery,useLazyGetProfileQuery,useLogoutServerMutation } = authApi;
+export const {
+  useLoginMutation,
+  useSsoLoginMutation,
+  useGetProfileQuery,
+  useLazyGetProfileQuery,
+  useLogoutServerMutation,
+} = authApi;

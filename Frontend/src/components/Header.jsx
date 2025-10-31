@@ -212,7 +212,7 @@
 
 // // ✅ Prevents re-renders unless props change
 // export default React.memo(Header);
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import logo from "../../public/images/logo.png";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/Avatar";
@@ -230,14 +230,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogoutServerMutation } from "@/store/api/authApi";
+import {
+  useGetProfileQuery,
+  useLogoutServerMutation,
+} from "@/store/api/authApi";
 import { useNavigate } from "react-router-dom";
-
 import { logout } from "@/store/Slice/authSlice";
 import { toast } from "sonner";
 import { useGetMeEmployeeQuery } from "@/store/api/employeeApi";
-
-// ✅ Import your NotificationDropdown
 import { NotificationDropdown } from "./NotificationDropdown";
 
 const Header = ({ great, showNotification, userName }) => {
@@ -249,10 +249,30 @@ const Header = ({ great, showNotification, userName }) => {
     shallowEqual
   );
   const { data, isLoading } = useGetMeEmployeeQuery();
-
+  const {
+    data: getProfileData,
+    error: errorGetProfileData,
+    isLoading: isLoadingGetProfileData,
+  } = useGetProfileQuery();
   const [logoutServer] = useLogoutServerMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Log or use getProfileData.name only after it's fetched
+  useEffect(() => {
+    if (getProfileData) {
+      console.log("getProfileData name:", getProfileData);
+      // You can also set a state or run any other functionality here
+    }
+  }, [getProfileData]);
+  // Helper function to capitalize first letters
+  const capitalizeName = (name) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   const logoutHandler = useCallback(async () => {
     try {
@@ -278,11 +298,10 @@ const Header = ({ great, showNotification, userName }) => {
           }}
         />
       </div>
-
       <div className="flex items-center space-x-2">
         {/* Greeting + Dept */}
         <h1 className="hidden font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-2xl text-black">
-          {great} {userName}
+          {great}, {capitalizeName(getProfileData?.name)}
           {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
           ) : (
@@ -292,7 +311,6 @@ const Header = ({ great, showNotification, userName }) => {
           )}
           <div className="w-[1.5px] h-[35px] bg-[#808080]"></div>
         </h1>
-
         {/* Logout Icon */}
         <svg
           onClick={logoutHandler}
@@ -311,10 +329,8 @@ const Header = ({ great, showNotification, userName }) => {
             strokeLinejoin="round"
           />
         </svg>
-
-        {/* ✅ Notification Dropdown (only if showNotification=true) */}
+        {/* Notification Dropdown (only if showNotification=true) */}
         {showNotification && <NotificationDropdown />}
-
         {/* Avatar */}
         <Avatar className="h-8 w-8 rounded-full hidden sm:block">
           <AvatarImage
@@ -322,7 +338,6 @@ const Header = ({ great, showNotification, userName }) => {
           />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-
         {/* Username + Dropdown */}
         <div className="flex gap-2 items-center">
           <h2 className="roboto font-normal text-lg sm:text-xl md:text-2xl truncate sm:block hidden">

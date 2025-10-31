@@ -133,7 +133,7 @@ const AdminDashboard = () => {
     <>
       <Header
         great={"Welcome"}
-        userName={user?.role}
+        userName={user?.name}
         dept={"(IT Department)"}
         showNotification={true}
       />{" "}

@@ -123,8 +123,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PSWD,
+        # 'USER': DB_USER,
+        # 'PASSWORD': DB_PSWD,
         'HOST': DB_HOST,  # or your SQL Server host
         'PORT': '',           # default port is 1433
         'OPTIONS': {
