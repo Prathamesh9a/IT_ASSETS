@@ -1,3 +1,4 @@
+// src/pages/user/UserDashboard.jsx
 import Header from "@/components/Header";
 import NavigationTabs from "@/components/NavigationTabs";
 import StatusButton from "@/components/StatusButoon";
@@ -17,7 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-const BASE_URL = "http://127.0.0.1:8000"; // Update if needed
+// Dynamic BASE_URL from .env
+const BASE_URL = import.meta.env.VITE_BASE_IMAGE_URL || "http://127.0.0.1:8000";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -51,6 +53,15 @@ const UserDashboard = () => {
       )
     : [];
 
+  // Safe image URL builder
+  const getImageUrl = (asset) => {
+    if (!asset?.images?.[0]?.image) {
+      return "https://placehold.co/60x60?text=NA";
+    }
+    const path = asset.images[0].image;
+    return path.startsWith("http") ? path : `${BASE_URL}${path}`;
+  };
+
   return (
     <>
       <Header
@@ -73,6 +84,9 @@ const UserDashboard = () => {
                 <table className="w-full min-w-max">
                   <thead className="bg-[#000C63] text-white text-xs md:text-sm">
                     <tr>
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
+                        Image
+                      </th>
                       <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
                         Asset ID
                       </th>
@@ -101,6 +115,9 @@ const UserDashboard = () => {
                           className={`border-b border-gray-200 ${i % 2 === 0 ? "bg-gray-50" : ""}`}
                         >
                           <td className="p-2 text-center border-r border-r-[#EAECF0]">
+                            <Skeleton className="h-12 w-12 mx-auto rounded-full" />
+                          </td>
+                          <td className="p-2 text-center border-r border-r-[#EAECF0]">
                             <Skeleton className="h-5 w-12 mx-auto" />
                           </td>
                           <td className="p-2 text-center border-r border-r-[#EAECF0]">
@@ -126,6 +143,17 @@ const UserDashboard = () => {
                           key={i}
                           className={`border-b border-gray-200 ${i % 2 === 0 ? "bg-gray-50" : ""}`}
                         >
+                          {/* IMAGE */}
+                          <td className="p-2 text-center border-r border-r-[#EAECF0]">
+                            <img
+                              src={getImageUrl(item)}
+                              alt={item?.product_name}
+                              className="h-12 w-12 mx-auto rounded-full object-cover border border-gray-300"
+                              onError={(e) => {
+                                e.target.src = "https://placehold.co/60x60?text=NA";
+                              }}
+                            />
+                          </td>
                           <td className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-xs roboto font-normal">
                             {item?.id}
                           </td>
@@ -190,7 +218,7 @@ const UserDashboard = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="text-center p-5 text-gray-500 text-xs roboto">
+                        <td colSpan="7" className="text-center p-5 text-gray-500 text-xs roboto">
                           No assets found.
                         </td>
                       </tr>
@@ -213,6 +241,9 @@ const UserDashboard = () => {
                 <table className="w-full min-w-max">
                   <thead className="bg-[#000C63] text-white text-xs md:text-sm">
                     <tr>
+                      <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
+                        Image
+                      </th>
                       <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
                         Asset ID
                       </th>
@@ -241,6 +272,9 @@ const UserDashboard = () => {
                           className={`border-b border-gray-200 ${i % 2 === 0 ? "bg-gray-50" : ""}`}
                         >
                           <td className="p-2 text-center border-r border-r-[#EAECF0]">
+                            <Skeleton className="h-12 w-12 mx-auto rounded-full" />
+                          </td>
+                          <td className="p-2 text-center border-r border-r-[#EAECF0]">
                             <Skeleton className="h-5 w-12 mx-auto" />
                           </td>
                           <td className="p-2 text-center border-r border-r-[#EAECF0]">
@@ -262,7 +296,7 @@ const UserDashboard = () => {
                       ))
                     ) : requestsError ? (
                       <tr>
-                        <td colSpan="6" className="text-center p-5">
+                        <td colSpan="7" className="text-center p-5">
                           <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded text-xs roboto">
                             <strong>Error:</strong> {requestError?.data?.detail || "Failed to load requests."}
                           </div>
@@ -274,6 +308,17 @@ const UserDashboard = () => {
                           key={req.id}
                           className={`border-b border-gray-200 ${i % 2 === 0 ? "bg-gray-50" : ""}`}
                         >
+                          {/* IMAGE */}
+                          <td className="p-2 text-center border-r border-r-[#EAECF0]">
+                            <img
+                              src={getImageUrl(req.asset)}
+                              alt={req.asset?.product_name}
+                              className="h-12 w-12 mx-auto rounded-full object-cover border border-gray-300"
+                              onError={(e) => {
+                                e.target.src = "https://placehold.co/60x60?text=NA";
+                              }}
+                            />
+                          </td>
                           <td className="p-2 text-center border-r border-r-[#EAECF0] text-xs roboto font-normal">
                             {req.asset?.id}
                           </td>
@@ -302,7 +347,7 @@ const UserDashboard = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="text-center p-5 text-gray-500 text-xs roboto">
+                        <td colSpan="7" className="text-center p-5 text-gray-500 text-xs roboto">
                           No pending requests.
                         </td>
                       </tr>
@@ -314,7 +359,7 @@ const UserDashboard = () => {
           </>
         )}
 
-        {/* ================== QUICK ACTIONS (LEFT-ALIGNED) ================== */}
+        {/* ================== QUICK ACTIONS ================== */}
         <h1 className="roboto font-bold text-lg sm:text-xl md:text-2xl mt-6">
           Quick Actions
         </h1>

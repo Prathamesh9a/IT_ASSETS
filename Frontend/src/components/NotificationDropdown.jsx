@@ -1,5 +1,5 @@
 // src/components/NotificationDropdown.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,18 +9,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  useGetNotificationsQuery,
-  useMarkAllReadMutation,
-} from "@/store/api/notificationApi";
+import { useGetNotificationsQuery, useMarkAllReadMutation } from "@/store/api/notificationApi";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { useSelector } from "react-redux";
 import { formatDistanceToNow } from "date-fns";
 
 export function NotificationDropdown() {
-  const [markAllRead, { isLoading: isMarking }] = useMarkAllReadMutation();
   const [selected, setSelected] = useState(null);
-  const { data = [], isLoading } = useGetNotificationsQuery(undefined, {
+  const [markAllRead, { isLoading: isMarking }] = useMarkAllReadMutation();
+
+  const { data = [], isLoading, refetch } = useGetNotificationsQuery(undefined, {
     pollingInterval: 300000,
     refetchOnFocus: true,
     refetchOnReconnect: true,
@@ -29,14 +27,27 @@ export function NotificationDropdown() {
   const unread = data.filter((n) => !n.is_read);
   const unreadCount = unread.length;
 
+  // Split: 2 at top, rest scrollable
+  const topTwo = unread.slice(0, 2);
+  const scrollable = unread.slice(2);
+
+  // Handle "Mark all read"
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllRead().unwrap();
+      refetch();
+    } catch (err) {
+      console.error("Failed to mark all read:", err);
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className="relative rounded-full cursor-pointer">
-            {/* Bell SVG */}
+          <div className="relative cursor-pointer">
             <svg
-              className="cursor-pointer w-6 h-6"
+              className="w-7 h-7"
               viewBox="0 0 25 32"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -65,86 +76,115 @@ export function NotificationDropdown() {
           </div>
         </DropdownMenuTrigger>
 
+        {/* DROPDOWN – NO NAVBAR OVERLAP */}
         <DropdownMenuContent
           align="end"
-          className="w-[90vw] max-w-md rounded-xl shadow-lg border bg-white p-2"
+          sideOffset={12}   // Push down from trigger
+          className="w-[90vw] max-w-md rounded-xl shadow-lg border bg-white p-0 mt-2 overflow-hidden"
         >
-          <DropdownMenuLabel className="flex justify-between items-center px-2 font-semibold">
-            Notifications
-            {unreadCount > 0 && (
-              <button
-                onClick={() => markAllRead()}
-                disabled={isMarking}
-                className="text-xs text-blue-600 hover:underline disabled:opacity-50"
-              >
-                {isMarking ? "..." : "Mark all read"}
-              </button>
+          {/* Sticky Header */}
+          <div className="sticky top-0 bg-white z-10 border-b px-3 py-2">
+            <DropdownMenuLabel className="flex justify-between items-center p-0 text-base font-semibold">
+              Notifications
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllRead}
+                  disabled={isMarking}
+                  className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                >
+                  {isMarking ? "Marking..." : "Mark all read"}
+                </button>
+              )}
+            </DropdownMenuLabel>
+          </div>
+
+          {/* Scrollable Area */}
+          <div
+            className="max-h-[60vh] overflow-y-auto px-2 py-1"
+            style={{ scrollbarWidth: "thin" }}
+          >
+            {/* Loading */}
+            {isLoading && (
+              <div className="space-y-2 py-2">
+                {[1, 2].map((i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-md" />
+                ))}
+              </div>
             )}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
 
-          {/* Loading Skeleton */}
-          {isLoading &&
-            [1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-4 w-full rounded my-1" />
-            ))}
+            {/* No Notifications */}
+            {!isLoading && unreadCount === 0 && (
+              <div className="text-center py-6 text-gray-500">
+                No new notifications
+              </div>
+            )}
 
-          {!isLoading && unread.length === 0 && (
-            <DropdownMenuItem disabled className="text-gray-500">
-              No notifications
-            </DropdownMenuItem>
-          )}
-
-          {/* SCROLLABLE CONTAINER WITH ONLY FIRST 2 VISIBLE INITIALLY */}
-          {!isLoading && unread.length > 0 && (
-            <div
-              className="overflow-y-auto pr-1"
-              style={{
-                maxHeight: "120px", // ~ first 2 items height
-                scrollbarWidth: "thin",
-              }}
-            >
-              {unread.map((n) => (
-                <DropdownMenuItem
+            {/* TOP 2 (Always Visible) */}
+            {!isLoading &&
+              topTwo.map((n) => (
+                <div
                   key={n.id}
                   onClick={() => setSelected(n)}
-                  className="rounded-md px-2 py-2 flex flex-col items-start cursor-pointer hover:bg-gray-100"
+                  className="p-3 mb-2 rounded-md cursor-pointer hover:bg-gray-50 border border-gray-100 transition-colors"
                 >
-                  <p className="text-sm font-medium truncate w-full">
-                    {n.message}
-                  </p>
-                  <span className="text-xs text-gray-400 mt-1">
+                  <p className="text-sm font-medium truncate">{n.message}</p>
+                  <span className="text-xs text-gray-400 mt-1 block">
                     {n.asset_name && `${n.asset_name} • `}
-                    {formatDistanceToNow(new Date(n.created_at), {
-                      addSuffix: true,
-                    })}
+                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                   </span>
-                </DropdownMenuItem>
+                </div>
               ))}
+
+            {/* SCROLLABLE REST */}
+            {scrollable.length > 0 && (
+              <div className="space-y-2">
+                {scrollable.map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => setSelected(n)}
+                    className="p-3 rounded-md cursor-pointer hover:bg-gray-50 border-t first:border-t-0 border-gray-100 transition-colors"
+                  >
+                    <p className="text-sm font-medium truncate">{n.message}</p>
+                    <span className="text-xs text-gray-400 mt-1 block">
+                      {n.asset_name && `${n.asset_name} • `}
+                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* View All */}
+          {unreadCount > 2 && (
+            <div className="border-t px-3 py-2 text-center bg-gray-50">
+              <button
+                onClick={() => (window.location.href = "/notification")}
+                className="text-xs text-blue-600 hover:underline font-medium"
+              >
+                View all {unreadCount} notifications
+              </button>
             </div>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Notification Modal */}
+      {/* MODAL */}
       {selected && (
-        <Dialog open={true} onOpenChange={() => setSelected(null)}>
+        <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
           <DialogContent className="max-w-md mx-auto p-6 rounded-xl">
             <DialogHeader>
-              <h3 className="text-lg font-semibold">Notification</h3>
+              <h3 className="text-lg font-semibold">Notification Details</h3>
             </DialogHeader>
-            <div className="space-y-2 text-sm">
+            <div className="mt-4 space-y-3 text-sm">
               <p className="font-medium">{selected.message}</p>
               {selected.asset_name && (
                 <p className="text-gray-600">
-                  <strong>Asset:</strong> {selected.asset_name} (
-                  {selected.asset_serial})
+                  <strong>Asset:</strong> {selected.asset_name} ({selected.asset_serial})
                 </p>
               )}
               <p className="text-xs text-gray-500">
-                {formatDistanceToNow(new Date(selected.created_at), {
-                  addSuffix: true,
-                })}
+                {formatDistanceToNow(new Date(selected.created_at), { addSuffix: true })}
               </p>
             </div>
           </DialogContent>
