@@ -54,7 +54,7 @@ const UserDashboard = () => {
   return (
     <>
       <Header
-        great="Welcome"
+        great=""
         userName={user?.username}
         dept="Engineering Dept"
         showNotification={true}

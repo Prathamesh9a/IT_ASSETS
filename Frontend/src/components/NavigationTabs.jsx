@@ -37,7 +37,7 @@ export default function ScrollTabs({ tabs, onTabChange }) {
 
   return (
     <div
-      className="pt-5 border-b-[2px] border-[#E1E1E1]"
+      className="pt-2 border-b-[2px] border-[#E1E1E1]"
       style={{ position: "relative" }}
     >
       <nav
@@ -51,7 +51,7 @@ export default function ScrollTabs({ tabs, onTabChange }) {
           scrollbarWidth: "none" /* Firefox */,
           display: "flex",
           gap: "clamp(1rem, 6vw, 4rem)", // Responsive gap
-          }}
+        }}
       >
         {tabs?.map((tab) => (
           <button

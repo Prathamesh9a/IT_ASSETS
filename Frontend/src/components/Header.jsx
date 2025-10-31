@@ -301,7 +301,11 @@ const Header = ({ great, showNotification, userName }) => {
       <div className="flex items-center space-x-2">
         {/* Greeting + Dept */}
         <h1 className="hidden  font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-xl text-black">
-          {great}, {capitalizeName(getProfileData?.name)}
+          {great},{" "}
+          <div className="text-[#000C63] font-semibold">
+            {" "}
+            {capitalizeName(getProfileData?.name)}
+          </div>
           {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
           ) : (

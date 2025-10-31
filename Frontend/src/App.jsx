@@ -102,10 +102,10 @@ const router = createBrowserRouter([
     path: "/assetTransferFlow",
     element: <AssetTransferWorkFlow />,
   },
-  {
-    path: "/systemreportanalytics",
-    element: <ReportsAndAnalytics />,
-  },
+  // {
+  //   path: "/systemreportanalytics",
+  //   element: <ReportsAndAnalytics />,
+  // },
 ]);
 
 function App() {

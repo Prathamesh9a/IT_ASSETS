@@ -90,12 +90,7 @@ const DashboardTable = () => {
     ? (employeeData || []).filter((emp) => emp?.user?.is_active)
     : [];
 
-  const loadings = [
-    getAssetIsLoading,
-    employeeDataIsLoading,
-    false,
-    getDepartmentIsLoading,
-  ];
+  const loadings = [getAssetIsLoading, employeeDataIsLoading, false];
   const counts = [
     dashboardSummary?.total_assets,
     dashboardSummary?.assigned_assets,
@@ -171,49 +166,49 @@ const DashboardTable = () => {
             );
           })}
         </div>
-        <h1 className="mt-3 roboto font-bold text-lg sm:text-xl md:text-2xl">
+        <h1 className="mt-2 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Assets
         </h1>
         {/* tabel */}
-        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-3 ">
+        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  mb-3 ">
           <div className="max-h-[200px]  mx-auto md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
             <table className=" w-full min-w-max overflow-x-auto">
               <thead className="bg-[#000C63] text-white  font-medium">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[16px] bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky top-0 z-20 rounded-tl-[10px] border-r border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Type Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Product Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Model Number
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Purchase Date
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Vendor Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Is AMC
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     AMC Start Date
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     AMC End Date
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     AMC Vender Name
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Warranty Expiry
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Status
                   </th>
-                  <th className="sticky top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base rounded-tr-[16px] font-medium">
+                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base rounded-tr-[10px] font-medium">
                     Configuration
                   </th>
                 </tr>
