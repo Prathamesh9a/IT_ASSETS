@@ -37,7 +37,7 @@ const SystemAuditTrail = () => {
   const { data: auditLogDataUser } = useGetAuditLogsByUserQuery();
   const { data: assetLogs, isLoading: isLoadingassetLogs } =
     useGetAssetLogsQuery();
-  console.log("assetLogs ", assetLogs);
+  // console.log("assetLogs ", assetLogs);
 
   const [filteredData, setFilteredData] = useState([]);
 

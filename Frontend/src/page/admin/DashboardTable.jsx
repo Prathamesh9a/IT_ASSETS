@@ -21,16 +21,15 @@ import { useGetEmployeesQuery } from "@/store/api/employeeApi";
 
 const DashboardTable = () => {
   const { data, isLoading } = useGetAssetsQuery();
-  console.log("dtata", data);
+  // console.log("dtata", data);
   const { data: dashboardSummary, isLoading: isLoadingdashboardSummary } =
     useGetDashboardSummaryQuery();
-  console.log("dashboardSummary", dashboardSummary);
+  // console.log("dashboardSummary", dashboardSummary);
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const { data: getAsset, isLoading: getAssetIsLoading } = useGetAssetsQuery();
-  const { data: departmentData, isLoading: getDepartmentIsLoading } =
-    useGetDepartmentsQuery();
+
   const { data: employeeData, isLoading: employeeDataIsLoading } =
     useGetEmployeesQuery();
 

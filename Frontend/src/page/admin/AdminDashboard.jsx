@@ -57,7 +57,7 @@ const AdminDashboard = () => {
   const [decideAssetRequest] = useDecideAssetRequestMutation();
   const { data: pendingAssets, isLoading: pendingAssetsIsLoading } =
     useGetPendingAssetsQuery();
-  console.log(pendingAssets);
+  // console.log(pendingAssets);
 
   const { data: getAsset, isLoading: getAssetIsLoading } = useGetAssetsQuery();
   const assignedAssets = (getAsset || []).filter(

@@ -1,8 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./baseQueryWithReauth";
 
-
-
 export const settingsApi = createApi({
   reducerPath: "settingsApi",
   baseQuery: baseQueryWithReauth,
@@ -12,12 +10,6 @@ export const settingsApi = createApi({
     getCategories: builder.query({
       query: () => "/settings/categories/",
       providesTags: ["Categories"],
-    }),
-
-    // ===== Departments =====
-    getDepartments: builder.query({
-      query: () => "/settings/departments/",
-      providesTags: ["Departments"],
     }),
 
     // ===== Locations =====

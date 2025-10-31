@@ -4,10 +4,7 @@ import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import assetImage from "/images/assetImage.png";
 import StatusButton from "@/components/StatusButoon";
-import {
-  useGetCategoriesQuery,
-  useGetDepartmentsQuery,
-} from "@/store/api/settingsApi";
+import { useGetCategoriesQuery } from "@/store/api/settingsApi";
 import { CustomVDropdown } from "@/components/CustomVDropdown";
 import { useGetEmployeesQuery } from "@/store/api/employeeApi";
 import {
@@ -28,7 +25,6 @@ const AssetsAssignmentManagement = () => {
     asset_id: "",
     employee_id: "",
   });
-  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedAssetType, setSelectedAssetType] = useState("");
   const [selectedAsset, setSelectedAsset] = useState("");
 
@@ -48,7 +44,6 @@ const AssetsAssignmentManagement = () => {
     ) || [];
 
   const { data: userData, isLoading: userIsLoading } = useGetUsersQuery();
-  const { data, isLoading: departmentIsLoading } = useGetDepartmentsQuery();
   const { data: employeeData, isLoading: employeeIsLoading } =
     useGetEmployeesQuery();
 

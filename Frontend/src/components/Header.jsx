@@ -261,7 +261,7 @@ const Header = ({ great, showNotification, userName }) => {
   // Log or use getProfileData.name only after it's fetched
   useEffect(() => {
     if (getProfileData) {
-      console.log("getProfileData name:", getProfileData);
+      // console.log("getProfileData name:", getProfileData);
       // You can also set a state or run any other functionality here
     }
   }, [getProfileData]);
@@ -307,13 +307,13 @@ const Header = ({ great, showNotification, userName }) => {
           <span className="text-[#000C63] font-semibold">
             {capitalizeName(getProfileData?.name)}
           </span>
-          {isLoading ? (
+          {/* {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
           ) : (
             <span className="text-gray-800">
               {data?.department ? `${data.department} Dept` : ""}
             </span>
-          )}
+          )} */}
           <div className="w-[1.5px] h-[35px] bg-[#808080]"></div>
         </h1>
         {/* Logout Icon */}

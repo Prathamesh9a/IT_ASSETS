@@ -310,7 +310,7 @@ const AddNewAsset = () => {
       toast.error("Failed to submit asset");
     }
 
-    console.log("formdayta", formData);
+    // console.log("formdayta", formData);
     navigate("/adminDashboard");
     navigate(0);
   };
