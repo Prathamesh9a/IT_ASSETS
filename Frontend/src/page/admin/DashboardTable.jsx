@@ -143,7 +143,7 @@ const DashboardTable = () => {
   return (
     <>
       <Header
-        great={"Welcome"}
+        great={""}
         userName={user?.role}
         dept={"(System Administrator)"}
         showNotification={true}
@@ -170,399 +170,414 @@ const DashboardTable = () => {
           Assets
         </h1>
         {/* tabel */}
-        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  mb-3 ">
-          <div className="max-h-[200px]  mx-auto md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
-            <table className=" w-full min-w-max overflow-x-auto">
-              <thead className="bg-[#000C63] text-white  font-medium">
+        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  mb-2">
+          <div className="max-h-[200px] md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
+            <table className="table-auto w-full min-w-max">
+              <thead className="bg-[#000C63] text-white font-medium sticky top-0 z-30">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[10px] border-r border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 rounded-tl-[10px] bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Type Name
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Product Name
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Model Number
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Purchase Date
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Vendor Name
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Is AMC
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     AMC Start Date
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     AMC End Date
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     AMC Vender Name
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Warranty Expiry
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base font-medium">
                     Status
                   </th>
-                  <th className="sticky border-r border-r-[#EAECF0] top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base rounded-tr-[10px] font-medium">
+                  <th className="sticky border-r border-r-white top-0 z-20 bg-[#000C63] text-white text-center p-3 roboto text-base rounded-tr-[10px] font-medium">
                     Configuration
                   </th>
                 </tr>
               </thead>
 
               <tbody>
-                {data?.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={`border-b border-gray-200 ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-300"
-                    }`}
-                  >
-                    {/* asset_type_name */}
-                    <td
-                      className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(item.id, "asset_type", item.asset_type)
-                      }
+                {data && data.length > 0 ? (
+                  data.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className={`border-b border-gray-200 ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-300"
+                      }`}
                     >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "asset_type" ? (
-                        <input
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.asset_type_name
-                      )}
-                    </td>
+                      {/* asset_type_name */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-start p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "asset_type",
+                            item.asset_type
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "asset_type" ? (
+                          <input
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
+                          item.asset_type_name
+                        )}
+                      </td>
 
-                    {/* product_name */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "product_name",
+                      {/* product_name */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "product_name",
+                            item.product_name
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "product_name" ? (
+                          <input
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.product_name
-                        )
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "product_name" ? (
-                        <input
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.product_name
-                      )}
-                    </td>
+                        )}
+                      </td>
 
-                    {/* model_no */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(item.id, "model_no", item.model_no)
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "model_no" ? (
-                        <input
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.model_no
-                      )}
-                    </td>
+                      {/* model_no */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(item.id, "model_no", item.model_no)
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "model_no" ? (
+                          <input
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
+                          item.model_no
+                        )}
+                      </td>
 
-                    {/* purchase_date */}
-                    <td
-                      className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "purchase_date",
+                      {/* purchase_date */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-start p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "purchase_date",
+                            item.purchase_date
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "purchase_date" ? (
+                          <input
+                            type="date"
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.purchase_date
-                        )
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "purchase_date" ? (
-                        <input
-                          type="date"
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.purchase_date
-                      )}
-                    </td>
+                        )}
+                      </td>
 
-                    {/* vendor */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(item.id, "vendor", item.vendor)
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "vendor" ? (
-                        <input
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.vendor_name
-                      )}
-                    </td>
+                      {/* vendor */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(item.id, "vendor", item.vendor)
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "vendor" ? (
+                          <input
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
+                          item.vendor_name
+                        )}
+                      </td>
 
-                    {/* is_amc */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={
-                        () => handleCellClick(item.id, "is_amc", item.is_amc) // pass boolean here
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "is_amc" ? (
-                        <select
-                          autoFocus
-                          value={tempValue}
-                          onClick={(e) => e.stopPropagation()}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          className="border rounded p-1 w-full text-black"
-                        >
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
-                        </select>
-                      ) : item.is_amc ? (
-                        "Yes"
-                      ) : (
-                        "No"
-                      )}
-                    </td>
+                      {/* is_amc */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={
+                          () => handleCellClick(item.id, "is_amc", item.is_amc) // pass boolean here
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "is_amc" ? (
+                          <select
+                            autoFocus
+                            value={tempValue}
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            className="border rounded p-1 w-full text-black"
+                          >
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                          </select>
+                        ) : item.is_amc ? (
+                          "Yes"
+                        ) : (
+                          "No"
+                        )}
+                      </td>
 
-                    {/* amc_start_date */}
-                    <td
-                      className="whitespace-nowrap text-start p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "amc_start_date",
+                      {/* amc_start_date */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-start p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "amc_start_date",
+                            item.amc_start_date
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "amc_start_date" ? (
+                          <input
+                            type="date"
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.amc_start_date
-                        )
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "amc_start_date" ? (
-                        <input
-                          type="date"
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.amc_start_date
-                      )}
-                    </td>
+                        )}
+                      </td>
 
-                    {/* amc_end_date */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "amc_end_date",
+                      {/* amc_end_date */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "amc_end_date",
+                            item.amc_end_date
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "amc_end_date" ? (
+                          <input
+                            type="date"
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.amc_end_date
-                        )
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "amc_end_date" ? (
-                        <input
-                          type="date"
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.amc_end_date
-                      )}
-                    </td>
+                        )}
+                      </td>
 
-                    {/* amc_vendor */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "amc_vendor",
+                      {/* amc_vendor */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "amc_vendor",
+                            item.amc_vendor_name
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "amc_vendor" ? (
+                          <input
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.amc_vendor_name
-                        )
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "amc_vendor" ? (
-                        <input
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.amc_vendor_name
-                      )}
-                    </td>
+                        )}
+                      </td>
 
-                    {/* warranty_expiry */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "warranty_expiry",
+                      {/* warranty_expiry */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "warranty_expiry",
+                            item.warranty_expiry
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "warranty_expiry" ? (
+                          <input
+                            type="date"
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.warranty_expiry
-                        )
-                      }
-                    >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "warranty_expiry" ? (
-                        <input
-                          type="date"
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.warranty_expiry
-                      )}
-                    </td>
+                        )}
+                      </td>
 
-                    {/* status */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(item.id, "status", item.status)
-                      }
-                    >
-                      {item.status}
-                    </td>
+                      {/* status */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(item.id, "status", item.status)
+                        }
+                      >
+                        {item.status}
+                      </td>
 
-                    {/* configuration */}
-                    <td
-                      className="whitespace-nowrap text-center p-2 text-base roboto font-normal cursor-pointer"
-                      onDoubleClick={() =>
-                        handleCellClick(
-                          item.id,
-                          "configuration",
+                      {/* configuration */}
+                      <td
+                        className="whitespace-nowrap border-r border-r-white text-center p-2 text-base roboto font-normal cursor-pointer"
+                        onDoubleClick={() =>
+                          handleCellClick(
+                            item.id,
+                            "configuration",
+                            item.configuration
+                          )
+                        }
+                      >
+                        {editingCell.id === item.id &&
+                        editingCell.key === "configuration" ? (
+                          <input
+                            value={tempValue}
+                            autoFocus
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(item)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleBlur(item);
+                              }
+                            }}
+                            className="border rounded p-1 w-full text-black"
+                          />
+                        ) : (
                           item.configuration
-                        )
-                      }
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="12"
+                      className="text-center p-6 text-gray-500 bg-gray-50 roboto text-base"
                     >
-                      {editingCell.id === item.id &&
-                      editingCell.key === "configuration" ? (
-                        <input
-                          value={tempValue}
-                          autoFocus
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleBlur(item);
-                            }
-                          }}
-                          className="border rounded p-1 w-full text-black"
-                        />
-                      ) : (
-                        item.configuration
-                      )}
+                      No asset logs found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

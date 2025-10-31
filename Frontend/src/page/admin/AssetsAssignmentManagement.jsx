@@ -129,76 +129,71 @@ const AssetsAssignmentManagement = () => {
 
         {/* === ASSIGN FORM === */}
         <div className="w-full border-b-[2px] border-b-[#E1E1E1] pb-4 mt-6">
-          <div className="w-full max-w-4xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
-              <div>
-                <div className="relative w-full mb-6">
-                  <label className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto">
-                    Asset Type
-                  </label>
-                  <select
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={selectedAssetType}
-                    onChange={(e) => {
-                      setSelectedAssetType(e.target.value);
-                      setSelectedAsset("");
-                    }}
-                  >
-                    <option value="">Select Asset Type</option>
-                    {!isLoadingAssetType &&
-                      assetType?.map((type) => (
-                        <option key={type.id} value={type.name}>
-                          {type.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div className="relative w-full mb-6">
-                  <label className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto">
-                    Select User
-                  </label>
-                  <select
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={assignmentData.employee_id}
-                    onChange={(e) =>
-                      setAssignmentData({
-                        ...assignmentData,
-                        employee_id: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Select User</option>
-                    {!userIsLoading &&
-                      userData?.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.first_name} {user.last_name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
+          <div className="w-full ">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
+              <div className="relative w-full mb-6">
+                <label className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto">
+                  Asset Type
+                </label>
+                <select
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={selectedAssetType}
+                  onChange={(e) => {
+                    setSelectedAssetType(e.target.value);
+                    setSelectedAsset("");
+                  }}
+                >
+                  <option value="">Select Asset Type</option>
+                  {!isLoadingAssetType &&
+                    assetType?.map((type) => (
+                      <option key={type.id} value={type.name}>
+                        {type.name}
+                      </option>
+                    ))}
+                </select>
               </div>
 
-              <div>
-                <div className="relative w-full mb-6">
-                  <label className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto">
-                    Available Assets
-                  </label>
-                  <select
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={selectedAsset}
-                    onChange={(e) => setSelectedAsset(e.target.value)}
-                    disabled={!selectedAssetType}
-                  >
-                    <option value="">Select Asset</option>
-                    {!assetIsLoading &&
-                      filteredAssets.map((asset) => (
-                        <option key={asset.id} value={asset.product_name}>
-                          {asset.product_name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
+              <div className="relative w-full mb-6">
+                <label className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto">
+                  Available Assets
+                </label>
+                <select
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={selectedAsset}
+                  onChange={(e) => setSelectedAsset(e.target.value)}
+                  disabled={!selectedAssetType}
+                >
+                  <option value="">Select Asset</option>
+                  {!assetIsLoading &&
+                    filteredAssets.map((asset) => (
+                      <option key={asset.id} value={asset.product_name}>
+                        {asset.product_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="relative w-full mb-6">
+                <label className="absolute bg-white z-10 text-[#6F7C8E] left-2 -top-2 text-xs roboto">
+                  Select User
+                </label>
+                <select
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={assignmentData.employee_id}
+                  onChange={(e) =>
+                    setAssignmentData({
+                      ...assignmentData,
+                      employee_id: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select User</option>
+                  {!userIsLoading &&
+                    userData?.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.first_name} {user.last_name}
+                      </option>
+                    ))}
+                </select>
               </div>
             </div>
 
@@ -225,7 +220,7 @@ const AssetsAssignmentManagement = () => {
           Current Assets Assigned
         </h1>
         <div className="overflow-x-auto my-6 md:mt-7">
-          <div className="max-h-[400px] md:max-h-[440px] overflow-y-auto scrollbar-hide hide-scrollbar border border-gray-200 rounded-lg">
+          <div className="max-h-[200px] md:max-h-[240px] overflow-y-auto  hide-scrollbar border border-gray-200 rounded-lg">
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white font-medium">
                 <tr>
@@ -256,7 +251,18 @@ const AssetsAssignmentManagement = () => {
               </thead>
 
               <tbody>
+                {!isLoadingAssetsList && assetsList?.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      className="text-center p-6 text-gray-500 bg-gray-50 roboto text-base"
+                    >
+                      No asset logs found.
+                    </td>
+                  </tr>
+                )}
                 {!isLoadingAssetsList &&
+                  assetsList?.length > 0 &&
                   assetsList?.map((item) => (
                     <tr key={item.id} className="border-b border-gray-200">
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
@@ -270,36 +276,29 @@ const AssetsAssignmentManagement = () => {
                           className="h-20 mx-auto"
                         />
                       </td>
-
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.asset?.id}
                       </td>
-
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.asset?.product_name}
                       </td>
-
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.employee?.first_name} {item.employee?.last_name}
                       </td>
-
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.assigned_date}
                       </td>
-
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         <div className="flex justify-center">
                           <StatusButton status={item.status} />
                         </div>
                       </td>
-
                       {/* Action buttons */}
                       <td className="whitespace-nowrap text-center py-2 text-base roboto font-normal">
                         <div className="flex gap-2 justify-center">
                           <button className="py-1.5 px-4 bg-[#000C63] hover:bg-[#2563eb] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
                             Transfer
                           </button>
-
                           {/* UNASSIGN BUTTON */}
                           <button
                             onClick={() => handleUnassign(item)}

@@ -845,7 +845,7 @@ const AddNewAsset = () => {
       )}
 
       <div className="px-6 mt-20">
-        <h1 className="mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
+        <h1 className="mt-6 md:mt-6 roboto font-bold text-lg sm:text-xl md:text-xl">
           {isEditing ? "Update" : "Add New"} Asset
         </h1>
         <form onSubmit={handleSubmitForm} className="mt-6">
@@ -1074,7 +1074,7 @@ const AddNewAsset = () => {
               <Button
                 type="submit"
                 disabled={isLoading || updateIsLoading}
-                className="rounded-full !w-auto !shrink-0 text-white bg-[#000C63] roboto font-semibold text-base md:text-xl cursor-pointer  hover:bg-[#4626B8]"
+                className="rounded-full !w-auto !shrink-0 text-white bg-[#000C63] roboto font-semibold text-base  cursor-pointer  hover:bg-[#4626B8]"
               >
                 {(isEditing ? updateIsLoading : isLoading) ? (
                   <>
@@ -1090,7 +1090,7 @@ const AddNewAsset = () => {
               <Button
                 type="button"
                 onClick={handleCancelForm}
-                className="rounded-full !w-auto !shrink-0 roboto font-semibold text-base md:text-xl cursor-pointer text-red-400 hover:bg-red-200  bg-red-100"
+                className="rounded-full !w-auto !shrink-0 roboto font-semibold text-base  cursor-pointer text-red-400 hover:bg-red-200  bg-red-100"
               >
                 Clear Form
               </Button>

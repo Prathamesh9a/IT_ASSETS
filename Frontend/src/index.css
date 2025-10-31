@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -138,10 +138,10 @@
   --color-purple-button: #8b5cf6;
   --color-purple-button-hover: #7c3aed;
 
-  --font-logo: 'Open Sans', sans-serif;
-  --font-heading: 'Open Sans', sans-serif;
-  --font-body: 'Poppins', sans-serif;
-  --font-button: 'Roboto', sans-serif;
+  --font-logo: "Open Sans", sans-serif;
+  --font-heading: "Open Sans", sans-serif;
+  --font-body: "Poppins", sans-serif;
+  --font-button: "Roboto", sans-serif;
 
   --border-radius-small: 3px;
   --border-radius-medium: 10px;
@@ -150,10 +150,10 @@
   --shadow-button: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
-*{
-   font-family: "Open Sans", sans-serif;
+* {
+  font-family: "Open Sans", sans-serif;
 }
-.roboto{
+.roboto {
   font-family: "Roboto", sans-serif;
 }
 .poppins-thin {
@@ -220,48 +220,48 @@
             outline: none;
         } */
 
-        /* Input field base styling */
-        .input-field {
-            padding: 16px 15px;
-            border: 1px solid #2066FF;
-            border-radius: 10px;
-            margin-bottom: 14px;
-            color: #2066FF;
-            width: 100%;
-            background-color: #ffff;
-            font-size: 14px;
-            display: flex;
-            flex-grow: 1;
-        }
+/* Input field base styling */
+.input-field {
+  padding: 16px 15px;
+  border: 1px solid #2066ff;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  color: #2066ff;
+  width: 100%;
+  background-color: #ffff;
+  font-size: 14px;
+  display: flex;
+  flex-grow: 1;
+}
 
-        .input-field:focus {
-            border-color: #2066FF;
-            outline: none;
-        }
+.input-field:focus {
+  border-color: #2066ff;
+  outline: none;
+}
 
-        /* Floating label pattern */
-        .floating-label {
-            position: absolute;
-            top: 40%;
-            left: 0.75rem;
-            transform: translateY(-50%);
-            color: #999;
-            transition: all 0.2s ease;
-            pointer-events: none;
-        }
+/* Floating label pattern */
+.floating-label {
+  position: absolute;
+  top: 40%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  color: #999;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
 
-        .input-field:focus+.floating-label,
-        .input-field:not(:placeholder-shown)+.floating-label {
-            top: 0rem;
-            left: 0.75rem;
-            font-size: 0.75rem;
-            color: #2066FF;
-            background-color: white;
-            padding: 0 0.25rem;
-            border-radius: 6px;
-        }
+.input-field:focus + .floating-label,
+.input-field:not(:placeholder-shown) + .floating-label {
+  top: 0rem;
+  left: 0.75rem;
+  font-size: 0.75rem;
+  color: #2066ff;
+  background-color: white;
+  padding: 0 0.25rem;
+  border-radius: 6px;
+}
 
-        /* scroll hide for all browsers */
+/* scroll hide for all browsers */
 .tabs-container {
   overflow-x: auto;
   white-space: nowrap;
@@ -277,7 +277,7 @@
   display: inline-block;
   padding: 0.5rem 1rem;
   font-size: 1.25rem; /* responsive font size can be handled with media queries */
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 600;
   text-transform: capitalize;
   cursor: pointer;
@@ -286,7 +286,7 @@
 }
 
 .tab-button.active {
-  border-bottom-color: #000C63; /* red-700 */
+  border-bottom-color: #000c63; /* red-700 */
 }
 
 /* optional for smooth underline animation */
@@ -296,17 +296,17 @@
   height: 2px;
   z-index: 999;
   border-radius: 24px;
-  background-color: #000C63;
+  background-color: #000c63;
   transition: all 0.3s;
 }
 
 /* hide scrollbars for all browsers */
 .hide-scrollbar {
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; 
+  display: none;
 }
 /* custom horizontal scrollbar only */
 /* custom horizontal scrollbar only */
@@ -363,4 +363,27 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Override react-datepicker styles with Tailwind */
+.react-datepicker {
+  @apply font-sans text-sm bg-white rounded-lg shadow-lg border border-gray-200;
+}
+.react-datepicker__header {
+  @apply bg-gray-50 rounded-t-lg border-b border-gray-200;
+}
+.react-datepicker__day--selected {
+  @apply bg-[#2066FF] text-white;
+}
+.react-datepicker__day--keyboard-selected {
+  @apply bg-[#2066FF] text-white;
+}
+.react-datepicker-popper {
+  z-index: 10000 !important;
+}
+.react-datepicker__day {
+  @apply rounded-full hover:bg-gray-100;
+}
+.react-datepicker__day--today {
+  @apply font-bold text-[#2066FF];
 }

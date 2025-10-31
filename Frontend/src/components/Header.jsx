@@ -287,7 +287,7 @@ const Header = ({ great, showNotification, userName }) => {
   }, [logoutServer, dispatch, navigate]);
 
   return (
-    <div className="w-full fixed inset-0 z-[500] px-6 h-16 bg-white shadow-[0px_-5px_25px_0px_#00000040] flex items-center justify-between">
+    <div className="w-full fixed inset-0 z-[500] px-6 h-14 bg-white shadow-[0px_-5px_25px_0px_#00000040] flex items-center justify-between">
       <div className="cursor-pointer">
         <img
           src={logo}
@@ -298,14 +298,15 @@ const Header = ({ great, showNotification, userName }) => {
           }}
         />
       </div>
+      <div className="hidden sm:block  font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-xl text-black">
+        {great}
+      </div>
       <div className="flex items-center space-x-2">
         {/* Greeting + Dept */}
         <h1 className="hidden  font-bold md:flex items-center gap-2 text-lg sm:text-xl md:text-xl text-black">
-          {great},{" "}
-          <div className="text-[#000C63] font-semibold">
-            {" "}
+          <span className="text-[#000C63] font-semibold">
             {capitalizeName(getProfileData?.name)}
-          </div>
+          </span>
           {isLoading ? (
             <span className="w-5 h-5 bg-gray-300 animate-pulse rounded-md" />
           ) : (
@@ -336,12 +337,15 @@ const Header = ({ great, showNotification, userName }) => {
         {/* Notification Dropdown (only if showNotification=true) */}
         {showNotification && <NotificationDropdown />}
         {/* Avatar */}
-        <Avatar className="h-8 w-8 rounded-full hidden sm:block">
+        {/* <Avatar className="h-8 w-8 rounded-full hidden sm:block">
           <AvatarImage
             src={user?.user?.profile || "https://placehold.co/600x600"}
           />
           <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
+        </Avatar> */}
+        <div className="h-8 w-8 rounded-full   bg-[#000C63] text-white flex justify-center items-center">
+          {getProfileData?.name?.charAt(0).toUpperCase()}
+        </div>
         {/* Username + Dropdown */}
         <div className="flex gap-2 items-center">
           <h2 className="roboto font-normal text-lg sm:text-xl md:text-2xl truncate sm:block hidden">
