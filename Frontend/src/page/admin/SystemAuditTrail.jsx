@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import NavigationTabs from "@/components/NavigationTabs";
 import { Calendar } from "lucide-react";
 import CustomDropdown from "@/components/CustomDropdown";
@@ -21,6 +23,8 @@ const tabs = ["My Assets", "Request", "Notification"];
 const VITE_BASE_URL = import.meta.env.VITE_BASE_IMAGE_URL;
 
 const SystemAuditTrail = () => {
+  const [fromDatePickerOpen, setFromDatePickerOpen] = useState(false);
+  const [toDatePickerOpen, setToDatePickerOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const [focusedInput, setFocusedInput] = useState(null);
   const [toDate, setToDate] = useState("");
@@ -170,16 +174,16 @@ const SystemAuditTrail = () => {
         userName={user?.role}
         showNotification={false}
       />
-      <div className="px-6 mt-22">
+      <div className="px-6 mt-20">
         {/* <NavigationTabs onTabChange={handleTabChange} tabs={tabs} /> */}
         {/* <h1 className=" mt-4 md:mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Filters
         </h1> */}
         {/* filters */}
-        <div className="border border-[#E1E1E1] bg-[#FAFAFA] rounded-2xl px-4 py-6 w-full">
+        <div className="border border-[#E1E1E1] bg-[#FAFAFA] rounded-2xl p-4 w-full">
           {/* Label */}
           <label
-            className={`block mb-4 poppins-medium ${
+            className={`block mb-1 poppins-medium ${
               focusedInput === "to" || focusedInput === "from"
                 ? "text-[#2066FF]"
                 : "text-[#808080]"
@@ -189,62 +193,97 @@ const SystemAuditTrail = () => {
           </label>
 
           {/* Main Container with wrap */}
-          <div className="grid grid-cols-1 md:grid-cols-2 justify-center md:justify-start gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 justify-center md:justify-start gap-4 w-full">
             {/* Date Inputs */}
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-6 flex-1 ">
-              {/* From Date */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 flex-1">
+              <span className="text-black poppins-regular hidden lg:block">
+                From
+              </span>
               <div
-                className={`flex items-center justify-between px-3 py-2 rounded-md border w-full sm:w-64 cursor-text transition
-        ${focusedInput === "from" ? "border-[#2066FF]" : "border-[#E1E1E1]"}`}
-                onClick={() => setFocusedInput("from")}
+                className={`flex items-center justify-between px-3 py-2 rounded-md border w-full sm:w-64 cursor-text transition ${
+                  focusedInput === "from"
+                    ? "border-[#2066FF]"
+                    : "border-[#E1E1E1]"
+                }`}
+                onClick={() => {
+                  setFocusedInput("from");
+                  setFromDatePickerOpen(true);
+                }}
               >
                 <input
                   type="text"
                   placeholder="DD / MM / YYYY"
                   value={fromDate}
-                  onChange={(e) => handleDateInput(e, setFromDate)}
-                  onFocus={() => setFocusedInput("from")}
-                  onBlur={() => setFocusedInput(null)}
+                  readOnly
                   className="w-full bg-transparent outline-none text-sm placeholder-[#808080] poppins-medium text-[#808080]"
                 />
-                <Calendar
-                  className={`h-5 w-5 ${
-                    focusedInput === "from"
-                      ? "text-[#2066FF]"
-                      : "text-[#808080]"
-                  }`}
+                <DatePicker
+                  selected={
+                    fromDate
+                      ? new Date(fromDate.split(" / ").reverse().join("-"))
+                      : null
+                  }
+                  onChange={(date) => {
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const year = date.getFullYear();
+                    setFromDate(`${day} / ${month} / ${year}`);
+                    setFromDatePickerOpen(false);
+                  }}
+                  open={fromDatePickerOpen}
+                  onClickOutside={() => setFromDatePickerOpen(false)}
+                  customInput={<Calendar className="h-5 w-5 text-[#808080]" />}
+                  popperClassName="react-datepicker-popper"
+                  popperPlacement="bottom-start"
+                  className="w-full"
                 />
               </div>
-
-              <span className="text-black poppins-regular hidden [@media(min-width:1221px)]:block ">
+              <span className="text-black poppins-regular hidden lg:block">
                 To
               </span>
-
-              {/* To Date */}
               <div
-                className={`flex items-center justify-between px-3 py-2 rounded-md border w-full sm:w-64 cursor-text transition
-        ${focusedInput === "to" ? "border-[#2066FF]" : "border-[#E1E1E1]"}`}
-                onClick={() => setFocusedInput("to")}
+                className={`flex items-center justify-between px-3 py-2 rounded-md border w-full sm:w-64 cursor-text transition ${
+                  focusedInput === "to"
+                    ? "border-[#2066FF]"
+                    : "border-[#E1E1E1]"
+                }`}
+                onClick={() => {
+                  setFocusedInput("to");
+                  setToDatePickerOpen(true);
+                }}
               >
                 <input
                   type="text"
                   placeholder="DD / MM / YYYY"
                   value={toDate}
-                  onChange={(e) => handleDateInput(e, setToDate)}
-                  onFocus={() => setFocusedInput("to")}
-                  onBlur={() => setFocusedInput(null)}
+                  readOnly
                   className="w-full bg-transparent outline-none text-sm placeholder-[#808080] poppins-medium text-[#808080]"
                 />
-                <Calendar
-                  className={`h-5 w-5 ${
-                    focusedInput === "to" ? "text-[#2066FF]" : "text-[#808080]"
-                  }`}
+                <DatePicker
+                  selected={
+                    toDate
+                      ? new Date(toDate.split(" / ").reverse().join("-"))
+                      : null
+                  }
+                  onChange={(date) => {
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const year = date.getFullYear();
+                    setToDate(`${day} / ${month} / ${year}`);
+                    setToDatePickerOpen(false);
+                  }}
+                  open={toDatePickerOpen}
+                  onClickOutside={() => setToDatePickerOpen(false)}
+                  customInput={<Calendar className="h-5 w-5 text-[#808080]" />}
+                  popperClassName="react-datepicker-popper"
+                  popperPlacement="bottom-start"
+                  className="w-full "
                 />
               </div>
             </div>
 
             {/* Dropdowns */}
-            <div className="flex flex-col sm:flex-row justify-center md:justify-start  gap-6 flex-1 min-w-[250px]">
+            <div className="flex flex-col sm:flex-row justify-center md:justify-start  gap-4 flex-1 min-w-[250px]">
               <CustomDropdown
                 label="User"
                 options={uniqueUsers}
@@ -280,13 +319,13 @@ const SystemAuditTrail = () => {
         </div>
 
         {/* divider */}
-        <div className="mt-6 w-full border-b-[2px] border-b-[#E1E1E1]" />
-        <h1 className=" mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
+        <div className="mt-2 w-full border-b-[2px] border-b-[#E1E1E1]" />
+        <h1 className=" mt-2 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Audit Log
         </h1>
         {/* table */}
-        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-6 md:mt-6">
-          <div className="max-h-[300px] md:max-h-[340px] overflow-y-auto  border border-gray-200 rounded-lg">
+        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-2">
+          <div className="max-h-[200px] md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white font-medium sticky top-0 z-30">
                 <tr>
@@ -369,7 +408,7 @@ const SystemAuditTrail = () => {
           headers={headers}
           filename="asset-log.csv"
         >
-          <Button className="bg-[#000C63] hover:bg-[#8A5CFF] cursor-pointer px-6 py-3 mb-4 roboto font-medium text-base rounded-full">
+          <Button className="bg-[#000C63] hover:bg-[#8A5CFF] cursor-pointer px-6 py-3 mb-2 roboto font-medium text-base rounded-full">
             Export To CSV
           </Button>
         </CSVLink>
