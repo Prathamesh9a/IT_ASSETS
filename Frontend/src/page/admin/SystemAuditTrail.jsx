@@ -172,9 +172,9 @@ const SystemAuditTrail = () => {
       />
       <div className="px-6 mt-22">
         {/* <NavigationTabs onTabChange={handleTabChange} tabs={tabs} /> */}
-        <h1 className=" mt-4 md:mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
+        {/* <h1 className=" mt-4 md:mt-4 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Filters
-        </h1>
+        </h1> */}
         {/* filters */}
         <div className="border border-[#E1E1E1] bg-[#FAFAFA] rounded-2xl px-4 py-6 w-full">
           {/* Label */}

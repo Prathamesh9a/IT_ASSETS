@@ -158,9 +158,9 @@ const DashboardTable = () => {
         showNotification={true}
       />
       <div className=" ">
-        <h1 className=" mt-6 md:mt-6 roboto font-bold text-lg sm:text-xl md:text-2xl">
+        {/* <h1 className=" mt-6 md:mt-6 roboto font-bold text-lg sm:text-xl md:text-2xl">
           Assets
-        </h1>
+        </h1> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-10 mt-3 border-b-[2px] border-b-[#E1E1E1] pb-4">
           {Array.from({ length: 4 }).map((_, index) => {
             const SvgIcon = svgMap[iconKeys[index]];
@@ -175,11 +175,11 @@ const DashboardTable = () => {
             );
           })}
         </div>
-        {/* <h1 className=" mt-6 md:mt-6 roboto font-bold text-xl sm:text-[24px] md:text-[30px]">
-          Assets 
-        </h1> */}
+        <h1 className="mt-3 roboto font-bold text-lg sm:text-xl md:text-2xl">
+          Assets
+        </h1>
         {/* tabel */}
-        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-3 md:mt-4">
+        <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-3 ">
           <div className="max-h-[200px]  mx-auto md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
             <table className=" w-full min-w-max overflow-x-auto">
               <thead className="bg-[#000C63] text-white  font-medium">
@@ -576,9 +576,9 @@ const DashboardTable = () => {
             </table>
           </div>
         </div>
-        <h1 className=" roboto font-bold text-lg sm:text-xl md:text-2xl ">
+        {/* <h1 className=" roboto font-bold text-lg sm:text-xl md:text-2xl ">
           Quick Action
-        </h1>
+        </h1> */}
         <div className="flex-wrap  flex gap-4 justify-self-start sm:justify-center sm:items-center my-2">
           <Button
             onClick={() => redirectToAddAssets()}
