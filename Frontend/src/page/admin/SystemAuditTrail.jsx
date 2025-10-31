@@ -112,7 +112,7 @@ const SystemAuditTrail = () => {
         configuration: log.asset?.configuration,
         status: log.asset?.status,
         image_url: log.asset?.images?.[0]?.image
-          ? `https://your-base-url.com${log.asset.images[0].image}`
+          ? `${VITE_BASE_URL}${log.asset.images[0].image}`
           : "",
       }))
     : [];
