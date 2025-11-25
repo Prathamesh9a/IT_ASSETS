@@ -36,7 +36,7 @@ const tabs = [
   "Dashboard",
   "Pending Request",
   "Assets Assignment",
-  "Audit Trail",
+  "Logs",
 ];
 const svgMap = {
   assetsSvg1: CardIcon1,
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
       console.log("Pending Request");
     } else if (tab === "Assets Assignment") {
       navigate("/assestAssingment");
-    } else if (tab === "Audit Trail") {
+    } else if (tab === "Logs") {
       navigate("/systemAuditTrail");
     }
   };

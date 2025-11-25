@@ -321,7 +321,7 @@ const SystemAuditTrail = () => {
         {/* divider */}
         <div className="mt-2 w-full border-b-[2px] border-b-[#E1E1E1]" />
         <h1 className=" mt-2 roboto font-bold text-lg sm:text-xl md:text-2xl">
-          Audit Log
+          Logs
         </h1>
         {/* table */}
         <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-2">

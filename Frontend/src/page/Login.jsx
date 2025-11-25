@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginSuccess } from "@/store/Slice/authSlice";
 import { toast } from "sonner";
+import logo from "../../public/images/logo.png";
+
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -63,7 +65,7 @@ const Login = () => {
     }
   };
 
-   // ✅ Separate handler for SSO login
+  // ✅ Separate handler for SSO login
   // const handleSsoLogin = async () => {
   //   try {
   //     const { data } = await ssoLogin({
@@ -102,9 +104,12 @@ const Login = () => {
           md:absolute md:left-1/2 md:top-1/2 md:-translate-y-1/2
         "
       >
-        <h1 className="font-bold text-[36px] sm:text-[54px] md:text-[63px] lg:text-[73px] text-black">
-          LOGO
-        </h1>
+        <img
+          src={logo}
+          className="object-contain h-10 mt-4"
+          alt=""
+
+        />
         <h3 className="roboto font-bold text-[22px] sm:text-[28px] md:text-[32px] text-center leading-none">
           Login In To <br />
           <span className="text-[#2066FF] roboto font-bold">Your</span> Account
@@ -188,7 +193,7 @@ const Login = () => {
         {/* <button className="mt-2 cursor-pointer hover:scale-90">
           <img src="/images/microsoft.png" alt="Microsoft Login" />
         </button> */}
-         {/* <button
+        {/* <button
         // onClick={handleSsoLogin}
         disabled={isSsoLoading}
         className="mt-2 cursor-pointer hover:scale-90 flex items-center gap-2"
