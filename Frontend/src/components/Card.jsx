@@ -3,7 +3,7 @@ import { Skeleton } from "./ui/skeleton";
 
 const Card = ({ SvgIcon, name, count, isLoading }) => {
   return (
-    <div className="group bg-white hover:bg-purple-100 relative overflow-hidden p-2 h-[110px] border border-[#c1c1c1c2] rounded-[10px] shadow-xl transition-all duration-300 ease-in-out cursor-pointer">
+    <div className="group bg-white hover:bg-purple-100 relative overflow-hidden p-2 h-[110px] border border-[#c1c1c1c2] rounded-[10px] shadow-xl transition-all duration-300 ease-in-out">
       {/* CSS Ellipse shape instead of image */}
       <div className="absolute -top-2 -right-2 w-[65px] h-[65px] pointer-events-none transition-all duration-300 ease-in-out">
         {/* Original gray ellipse */}

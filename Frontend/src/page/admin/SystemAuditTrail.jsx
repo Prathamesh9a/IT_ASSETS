@@ -325,7 +325,7 @@ const SystemAuditTrail = () => {
         </h1>
         {/* table */}
         <div className="overflow-x-auto pb-3 border-b-[2px] border-b-[#E1E1E1]  my-2">
-          <div className="max-h-[200px] md:max-h-[240px] overflow-y-auto  border border-gray-200 rounded-lg">
+          <div className="max-h-[50vh] overflow-y-auto  border border-gray-200 rounded-lg">
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white font-medium sticky top-0 z-30">
                 <tr>
