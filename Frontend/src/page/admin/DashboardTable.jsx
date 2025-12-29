@@ -941,7 +941,7 @@ const DashboardTable = () => {
                 >
                   ×
                 </button>
-              )}
+              )}  
             </div>
             
             {/* Search result count */}
