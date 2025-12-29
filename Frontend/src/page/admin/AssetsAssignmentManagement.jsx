@@ -219,9 +219,9 @@ const AssetsAssignmentManagement = () => {
             <table className="table-auto w-full min-w-max">
               <thead className="bg-[#000C63] text-white font-medium">
                 <tr>
-                  <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
+                  {/* <th className="sticky top-0 z-20 rounded-tl-[12px] bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Asset Image
-                  </th>
+                  </th> */}
                   <th className="sticky top-0 z-20  bg-[#000C63] text-white text-center p-3 roboto text-base md:text-lg font-medium">
                     Asset ID
                   </th>
@@ -260,7 +260,7 @@ const AssetsAssignmentManagement = () => {
                   assetsList?.length > 0 &&
                   assetsList?.map((item) => (
                     <tr key={item.id} className="border-b border-gray-200">
-                      <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
+                      {/* <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         <img
                           src={
                             item.asset?.images?.[0]?.image
@@ -270,7 +270,7 @@ const AssetsAssignmentManagement = () => {
                           alt="Asset"
                           className="h-20 mx-auto"
                         />
-                      </td>
+                      </td> */}
                       <td className="whitespace-nowrap text-center p-2 text-base roboto font-normal">
                         {item.asset?.id}
                       </td>
@@ -291,9 +291,9 @@ const AssetsAssignmentManagement = () => {
                       {/* Action buttons */}
                       <td className="whitespace-nowrap text-center py-2 text-base roboto font-normal">
                         <div className="flex gap-2 justify-center">
-                          <button className="py-1.5 px-4 bg-[#000C63] hover:bg-[#2563eb] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
+                          {/* <button className="py-1.5 px-4 bg-[#000C63] hover:bg-[#2563eb] text-white rounded-full text-base cursor-pointer roboto font-semibold transition-colors duration-300">
                             Transfer
-                          </button>
+                          </button> */}
                           {/* UNASSIGN BUTTON */}
                           <button
                             onClick={() => handleUnassign(item)}
