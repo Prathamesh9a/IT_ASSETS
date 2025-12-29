@@ -204,9 +204,9 @@ const AdminDashboard = () => {
                 <table className="w-full min-w-max overflow-x-auto">
                   <thead className="bg-[#000C63] text-white font-medium">
                     <tr>
-                      <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base   font-medium">
+                      {/* <th className="sticky top-0 z-20 rounded-tl-[12px] border-r-[1px] border-r-[#EAECF0] bg-[#000C63] text-white text-center p-3 roboto text-base   font-medium">
                         Asset Image
-                      </th>
+                      </th> */}
                       <th className="sticky top-0 z-20 bg-[#000C63] border-r-[1px] border-r-[#EAECF0] text-white text-center p-3 roboto text-base   font-medium">
                         Request ID
                       </th>
@@ -278,7 +278,7 @@ const AdminDashboard = () => {
                             index % 2 === 0 ? "bg-gray-100" : ""
                           }`}
                         >
-                          <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
+                          {/* <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.asset?.images?.length > 0 &&
                             item.asset.images[0].image ? (
                               <img
@@ -295,7 +295,7 @@ const AdminDashboard = () => {
                                 {item.asset?.product_name || "No Image"}
                               </span>
                             )}
-                          </td>
+                          </td> */}
                           <td className="whitespace-nowrap text-center p-2 border-r-[1px] border-r-[#EAECF0] text-base roboto font-normal">
                             {item.id || "-"}
                           </td>

@@ -84,9 +84,9 @@ const UserDashboard = () => {
                 <table className="w-full min-w-max">
                   <thead className="bg-[#000C63] text-white text-xs md:text-sm">
                     <tr>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
+                      {/* <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
                         Image
-                      </th>
+                      </th> */}
                       <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
                         Asset ID
                       </th>
@@ -144,7 +144,7 @@ const UserDashboard = () => {
                           className={`border-b border-gray-200 ${i % 2 === 0 ? "bg-gray-50" : ""}`}
                         >
                           {/* IMAGE */}
-                          <td className="p-2 text-center border-r border-r-[#EAECF0]">
+                          {/* <td className="p-2 text-center border-r border-r-[#EAECF0]">
                             <img
                               src={getImageUrl(item)}
                               alt={item?.product_name}
@@ -153,7 +153,7 @@ const UserDashboard = () => {
                                 e.target.src = "https://placehold.co/60x60?text=NA";
                               }}
                             />
-                          </td>
+                          </td> */}
                           <td className="whitespace-nowrap text-center p-2 border-r border-r-[#EAECF0] text-xs roboto font-normal">
                             {item?.id}
                           </td>
@@ -241,9 +241,9 @@ const UserDashboard = () => {
                 <table className="w-full min-w-max">
                   <thead className="bg-[#000C63] text-white text-xs md:text-sm">
                     <tr>
-                      <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
+                      {/* <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
                         Image
-                      </th>
+                      </th> */}
                       <th className="sticky top-0 z-20 bg-[#000C63] border-r border-r-[#EAECF0] text-center p-2 roboto font-medium">
                         Asset ID
                       </th>
@@ -309,7 +309,7 @@ const UserDashboard = () => {
                           className={`border-b border-gray-200 ${i % 2 === 0 ? "bg-gray-50" : ""}`}
                         >
                           {/* IMAGE */}
-                          <td className="p-2 text-center border-r border-r-[#EAECF0]">
+                          {/* <td className="p-2 text-center border-r border-r-[#EAECF0]">
                             <img
                               src={getImageUrl(req.asset)}
                               alt={req.asset?.product_name}
@@ -318,7 +318,7 @@ const UserDashboard = () => {
                                 e.target.src = "https://placehold.co/60x60?text=NA";
                               }}
                             />
-                          </td>
+                          </td> */}
                           <td className="p-2 text-center border-r border-r-[#EAECF0] text-xs roboto font-normal">
                             {req.asset?.id}
                           </td>
